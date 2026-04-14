@@ -1,0 +1,476 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);}
+.hint-btn{padding:8px 12px;font-size:12px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;}
+.hint-btn:hover:not(:disabled){background:var(--color-background-secondary);}
+.hint-btn:active:not(:disabled){transform:scale(0.98);}
+.hint-btn:disabled{opacity:0.35;cursor:default;}
+.cost-pill{font-size:10px;font-weight:500;padding:2px 6px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
+.revealed-row{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 12px;margin-bottom:5px;font-size:13px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.stat-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.stat-bar-bg{background:var(--color-border-tertiary);border-radius:4px;height:5px;flex:1;min-width:60px;}
+.stat-fill{height:5px;border-radius:4px;}
+.type-pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:500;margin:2px 2px 2px 0;}
+.score-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 10px;text-align:center;}
+.slabel{font-size:10px;color:var(--color-text-tertiary);margin-bottom:2px;}
+.sval{font-size:20px;font-weight:500;color:var(--color-text-primary);}
+.section-label{font-size:10px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.06em;margin:14px 0 6px;}
+input[type=text]{width:100%;padding:8px 12px;font-size:14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);}
+.play-cry-btn{padding:6px 14px;font-size:12px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);}
+.play-cry-btn:hover{background:var(--color-background-secondary);}
+#ac-list{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);margin-top:2px;display:none;max-height:150px;overflow-y:auto;position:absolute;width:100%;z-index:10;}
+.ac-item{padding:7px 12px;font-size:13px;cursor:pointer;color:var(--color-text-primary);}
+.ac-item:hover{background:var(--color-background-secondary);}
+#result-banner{border-radius:var(--border-radius-lg);padding:16px;text-align:center;}
+#pksprite{width:96px;height:96px;image-rendering:pixelated;display:block;margin:0 auto 6px;}
+</style>
+
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;">Pokémon guessing game powered by PokéAPI</h2>
+
+<div id="loading" style="text-align:center;padding:2.5rem;color:var(--color-text-secondary);font-size:14px;">
+  <div id="load-msg">Fetching full Pokédex...</div>
+  <div style="margin-top:8px;font-size:12px;color:var(--color-text-tertiary);" id="load-sub"></div>
+</div>
+
+<div id="game" style="display:none;padding:1rem 0;">
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:1.2rem;">
+    <div class="score-card"><div class="slabel">Points used</div><div class="sval" id="pts">0</div></div>
+    <div class="score-card"><div class="slabel">Hints taken</div><div class="sval" id="hcount">0</div></div>
+    <div class="score-card"><div class="slabel">Wrong guesses</div><div class="sval" id="wrongs">0</div></div>
+    <div class="score-card"><div class="slabel">Pokémon #</div><div class="sval" id="pknum">—</div></div>
+  </div>
+
+  <div id="revealed-list"></div>
+
+  <div class="section-label">Hints — click to reveal (costs points)</div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;" id="btn-grid"></div>
+
+  <div class="section-label" style="margin-top:1.2rem;">Your guess</div>
+  <div style="position:relative;">
+    <input type="text" id="guess-input" placeholder="Type a Pokémon name..." autocomplete="off"/>
+    <div id="ac-list"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:6px;">
+    <button class="hint-btn" onclick="submitGuess()" style="justify-content:center;border-color:var(--color-border-info);color:var(--color-text-info);font-weight:500;">Submit guess</button>
+    <button class="hint-btn" onclick="giveUp()" style="justify-content:center;color:var(--color-text-danger);border-color:var(--color-border-danger);width:auto;padding:8px 14px;">Give up</button>
+  </div>
+  <div id="guess-feedback" style="margin-top:6px;font-size:13px;min-height:18px;text-align:center;"></div>
+
+  <div id="result-area" style="display:none;margin-top:1.2rem;">
+    <div id="result-banner">
+      <img id="pksprite" src="" alt=""/>
+      <div style="font-size:20px;font-weight:500;margin-bottom:4px;" id="result-name"></div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;" id="result-score"></div>
+      <button class="hint-btn" onclick="newGame()" style="justify-content:center;margin:0 auto;max-width:180px;">New Pokémon</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TYPE_COLORS={normal:'#A8A77A',fire:'#EE8130',water:'#6390F0',electric:'#F7D02C',grass:'#7AC74C',ice:'#96D9D6',fighting:'#C22E28',poison:'#A33EA1',ground:'#E2BF65',flying:'#A98FF3',psychic:'#F95587',bug:'#A6B91A',rock:'#B6A136',ghost:'#735797',dragon:'#6F35FC',dark:'#705746',steel:'#B7B7CE',fairy:'#D685AD',stellar:'#40B5A5',unknown:'#68A090'};
+
+const HINTS=[
+  {id:'dex_number',label:'Pokédex number',cost:3,icon:'🔢',desc:'National Pokédex number'},
+  {id:'generation',label:'Generation',cost:5,icon:'📅'},
+  {id:'legendary',label:'Legendary status',cost:4,icon:'🏆'},
+  {id:'color',label:'Pokédex color',cost:6,icon:'🎨'},
+  {id:'shape',label:'Body shape',cost:6,icon:'🔷'},
+  {id:'evolution_stage',label:'Evolution stage',cost:5,icon:'🌱'},
+  {id:'evo_method',label:'How it evolves',cost:9,icon:'🔄'},
+  {id:'bst',label:'Base stat total',cost:6,icon:'📊'},
+  {id:'type',label:'Type(s)',cost:8,icon:'🔥'},
+  {id:'weaknesses',label:'Type weaknesses',cost:11,icon:'⚠️'},
+  {id:'stats',label:'Full stat spread',cost:12,icon:'📈'},
+  {id:'abilities',label:'Abilities',cost:10,icon:'✨'},
+  {id:'egg_group',label:'Egg group(s)',cost:8,icon:'🥚'},
+  {id:'height_weight',label:'Height & weight',cost:7,icon:'📏'},
+  {id:'catch_rate',label:'Catch rate',cost:5,icon:'🎯'},
+  {id:'base_friendship',label:'Base friendship',cost:5,icon:'💛'},
+  {id:'growth_rate',label:'Growth rate',cost:5,icon:'📉'},
+  {id:'genus',label:'Species (genus)',cost:9,icon:'🏷️'},
+  {id:'region',label:'Region',cost:6,icon:'🗺️'},
+  {id:'gender_ratio',label:'Gender ratio',cost:6,icon:'⚥'},
+  {id:'cry',label:'Cry (audio)',cost:14,icon:'🔊'},
+  {id:'habitat',label:'Habitat',cost:7,icon:'🌿'},
+  {id:'base_exp',label:'Base experience',cost:6,icon:'⭐'},
+  {id:'ev_yield',label:'EV yield',cost:8,icon:'💪'},
+  {id:'flavor',label:'Pokédex entry',cost:18,icon:'📖'},
+];
+
+function cpColor(c){
+  if(c<=6)return{bg:'#EAF3DE',tx:'#3B6D11'};
+  if(c<=11)return{bg:'#FAEEDA',tx:'#633806'};
+  return{bg:'#FCEBEB',tx:'#A32D2D'};
+}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
+function capWords(s){return s?s.split(/[-_ ]/).map(cap).join(' '):'';}
+
+let pkData=null,pkSpecies=null,pkEvoChain=null,typeData={};
+let usedPts=0,hintsTaken=0,wrongGuesses=0,revealed=new Set();
+let allPokemon=[],totalCount=0;
+let typeDefenseCache={};
+
+async function fetchJSON(url){
+  const r=await fetch(url);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function loadAllPokemon(){
+  const res=await fetchJSON('https://pokeapi.co/api/v2/pokemon-species?limit=10000');
+  totalCount=res.count;
+  allPokemon=res.results;
+  document.getElementById('load-sub').textContent=`${totalCount} Pokémon loaded`;
+}
+
+async function loadTypeChart(){
+  const res=await fetchJSON('https://pokeapi.co/api/v2/type?limit=100');
+  const types=res.results.map(t=>t.name).filter(t=>t!=='unknown'&&t!=='shadow');
+  await Promise.all(types.map(async t=>{
+    const td=await fetchJSON(`https://pokeapi.co/api/v2/type/${t}`);
+    typeData[t]=td.damage_relations;
+  }));
+}
+
+function calcDefenses(typeNames){
+  const mult={};
+  Object.keys(TYPE_COLORS).forEach(t=>mult[t]=1);
+  typeNames.forEach(defType=>{
+    const rel=typeData[defType];
+    if(!rel)return;
+    rel.double_damage_from?.forEach(t=>mult[t.name]=(mult[t.name]||1)*2);
+    rel.half_damage_from?.forEach(t=>mult[t.name]=(mult[t.name]||1)*0.5);
+    rel.no_damage_from?.forEach(t=>mult[t.name]=(mult[t.name]||1)*0);
+  });
+  return mult;
+}
+
+async function newGame(){
+  document.getElementById('game').style.display='none';
+  document.getElementById('loading').style.display='block';
+  document.getElementById('result-area').style.display='none';
+  document.getElementById('revealed-list').innerHTML='';
+  document.getElementById('guess-input').value='';
+  document.getElementById('guess-feedback').textContent='';
+  document.getElementById('ac-list').style.display='none';
+  revealed=new Set();usedPts=0;hintsTaken=0;wrongGuesses=0;
+  updateScores();
+
+  try{
+    if(!allPokemon.length){
+      document.getElementById('load-msg').textContent='Fetching full Pokédex...';
+      await Promise.all([loadAllPokemon(),loadTypeChart()]);
+    }
+    document.getElementById('load-msg').textContent='Loading a random Pokémon...';
+    const pick=allPokemon[Math.floor(Math.random()*allPokemon.length)];
+    const speciesName=pick.name;
+    pkSpecies=await fetchJSON(`https://pokeapi.co/api/v2/pokemon-species/${speciesName}`);
+    const pkId=pkSpecies.id;
+    pkData=await fetchJSON(`https://pokeapi.co/api/v2/pokemon/${pkId}`);
+    pkEvoChain=await fetchJSON(pkSpecies.evolution_chain.url);
+    document.getElementById('pknum').textContent='#'+pkId;
+    renderButtons();
+    document.getElementById('loading').style.display='none';
+    document.getElementById('game').style.display='block';
+  }catch(e){
+    document.getElementById('load-msg').textContent='Error — retrying...';
+    setTimeout(newGame,2000);
+  }
+}
+
+function updateScores(){
+  document.getElementById('pts').textContent=usedPts;
+  document.getElementById('hcount').textContent=hintsTaken;
+  document.getElementById('wrongs').textContent=wrongGuesses;
+}
+
+function renderButtons(){
+  const grid=document.getElementById('btn-grid');
+  grid.innerHTML='';
+  HINTS.forEach(h=>{
+    const btn=document.createElement('button');
+    btn.className='hint-btn';
+    btn.id='btn-'+h.id;
+    btn.disabled=revealed.has(h.id);
+    const cc=cpColor(h.cost);
+    btn.innerHTML=`<span style="font-size:12px;">${h.icon} ${h.label}</span><span class="cost-pill" style="background:${cc.bg};color:${cc.tx};">-${h.cost} pts</span>`;
+    btn.onclick=()=>revealHint(h);
+    grid.appendChild(btn);
+  });
+}
+
+function revealHint(h){
+  if(revealed.has(h.id))return;
+  revealed.add(h.id);
+  usedPts+=h.cost;hintsTaken++;
+  updateScores();
+  document.getElementById('btn-'+h.id).disabled=true;
+  const val=getHintHTML(h.id);
+  const list=document.getElementById('revealed-list');
+  const div=document.createElement('div');
+  div.className='revealed-row';
+  div.innerHTML=`<span style="color:var(--color-text-secondary);font-size:11px;white-space:nowrap;padding-top:2px;">${h.icon} ${h.label}</span><div style="text-align:right;flex:1;">${val}</div>`;
+  list.prepend(div);
+}
+
+function typePill(name){
+  const c=TYPE_COLORS[name]||'#888';
+  return `<span class="type-pill" style="background:${c}22;color:${c};border:1px solid ${c}44;">${cap(name)}</span>`;
+}
+
+function getEvoStage(){
+  const stages=[];
+  function walk(node,depth){
+    stages.push({name:node.species.name,depth,details:node.evolution_details});
+    node.evolves_to.forEach(n=>walk(n,depth+1));
+  }
+  walk(pkEvoChain.chain,0);
+  const me=stages.find(s=>s.name===pkData.species.name||s.name===pkSpecies.name);
+  const maxDepth=Math.max(...stages.map(s=>s.depth));
+  return{stage:me?(me.depth+1):1,total:maxDepth+1,details:me?me.details:[]};
+}
+
+function getHintHTML(id){
+  const pk=pkData,sp=pkSpecies;
+  switch(id){
+    case 'dex_number':
+      return`<span style="font-size:15px;font-weight:500;color:var(--color-text-primary);">#${pk.id}</span>`;
+
+    case 'generation':{
+      const genName=sp.generation.name;
+      const genNum=genName.replace('generation-','').toUpperCase();
+      return`<span style="font-size:14px;font-weight:500;color:var(--color-text-primary);">Gen ${genNum}</span>`;
+    }
+
+    case 'legendary':{
+      const status=sp.is_legendary?'Legendary':sp.is_mythical?'Mythical':'Regular Pokémon';
+      const col=sp.is_legendary||sp.is_mythical?'var(--color-text-warning)':'var(--color-text-secondary)';
+      return`<span style="font-size:13px;color:${col};font-weight:500;">${status}</span>`;
+    }
+
+    case 'color':
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${capWords(sp.color.name)}</span>`;
+
+    case 'shape':
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${sp.shape?capWords(sp.shape.name):'Unknown'}</span>`;
+
+    case 'evolution_stage':{
+      const{stage,total}=getEvoStage();
+      const labels=['','Basic','Stage 1','Stage 2','Stage 3'];
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${labels[stage]||'Stage '+stage} (${stage}/${total}${total===1?' — standalone':''})</span>`;
+    }
+
+    case 'evo_method':{
+      const{details}=getEvoStage();
+      if(!details||!details.length)return`<span style="font-size:13px;color:var(--color-text-secondary);">Does not evolve from anything (base form)</span>`;
+      const d=details[0];
+      const parts=[];
+      if(d.trigger?.name==='level-up'){
+        if(d.min_level)parts.push(`Level ${d.min_level}`);
+        else parts.push('Level up');
+      }else if(d.trigger?.name==='use-item'&&d.item){
+        parts.push(`Use ${capWords(d.item.name)}`);
+      }else if(d.trigger?.name==='trade'){
+        parts.push('Trade'+(d.held_item?` holding ${capWords(d.held_item.name)}`:''));
+      }else if(d.trigger){
+        parts.push(capWords(d.trigger.name));
+      }
+      if(d.min_happiness)parts.push(`High friendship (≥${d.min_happiness})`);
+      if(d.time_of_day)parts.push(`During ${d.time_of_day}`);
+      if(d.known_move)parts.push(`Knowing ${capWords(d.known_move.name)}`);
+      if(d.location)parts.push(`At ${capWords(d.location.name)}`);
+      if(d.held_item&&d.trigger?.name!=='trade')parts.push(`Holding ${capWords(d.held_item.name)}`);
+      if(d.min_beauty)parts.push(`High beauty`);
+      if(d.needs_overworld_rain)parts.push(`In rain`);
+      if(d.turn_upside_down)parts.push(`Turn console upside down`);
+      if(d.gender===1)parts.push('Female');
+      if(d.gender===2)parts.push('Male');
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${parts.join(' + ')||'Special condition'}</span>`;
+    }
+
+    case 'bst':{
+      const bst=pk.stats.reduce((s,x)=>s+x.base_stat,0);
+      return`<span style="font-size:15px;font-weight:500;color:var(--color-text-primary);">${bst}</span>`;
+    }
+
+    case 'type':
+      return pk.types.map(t=>typePill(t.type.name)).join('');
+
+    case 'weaknesses':{
+      const types=pk.types.map(t=>t.type.name);
+      const mult=calcDefenses(types);
+      const x4=Object.entries(mult).filter(([,v])=>v===4).map(([t])=>t);
+      const x2=Object.entries(mult).filter(([,v])=>v===2).map(([t])=>t);
+      const half=Object.entries(mult).filter(([,v])=>v===0.5).map(([t])=>t);
+      const immune=Object.entries(mult).filter(([,v])=>v===0).map(([t])=>t);
+      let out='';
+      if(x4.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--color-text-tertiary);">x4 </span>`+x4.map(typePill).join('')+'</div>';
+      if(x2.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--color-text-tertiary);">x2 </span>`+x2.map(typePill).join('')+'</div>';
+      if(half.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--color-text-tertiary);">½ </span>`+half.map(typePill).join('')+'</div>';
+      if(immune.length)out+=`<div><span style="font-size:10px;color:var(--color-text-tertiary);">0 </span>`+immune.map(typePill).join('')+'</div>';
+      return out||'<span style="font-size:13px;color:var(--color-text-secondary);">No weaknesses</span>';
+    }
+
+    case 'stats':{
+      const names={hp:'HP',attack:'Atk',defense:'Def','special-attack':'SpA','special-defense':'SpD',speed:'Spe'};
+      return pk.stats.map(s=>{
+        const pct=Math.round(s.base_stat/255*100);
+        const col=s.base_stat>=100?'#639922':s.base_stat>=60?'#BA7517':'#E24B4A';
+        return`<div class="stat-row"><span style="font-size:10px;color:var(--color-text-tertiary);min-width:24px;">${names[s.stat.name]||s.stat.name}</span><div class="stat-bar-bg"><div class="stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="font-size:11px;min-width:22px;text-align:right;color:var(--color-text-primary);">${s.base_stat}</span></div>`;
+      }).join('');
+    }
+
+    case 'abilities':
+      return pk.abilities.map(a=>`<span style="font-size:12px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:2px 8px;display:inline-block;margin:2px;color:var(--color-text-primary);">${capWords(a.ability.name)}${a.is_hidden?' <span style="font-size:10px;color:var(--color-text-tertiary);">(H)</span>':''}</span>`).join('');
+
+    case 'egg_group':
+      return sp.egg_groups.map(e=>`<span style="font-size:13px;color:var(--color-text-primary);">${capWords(e.name)}</span>`).join(', ');
+
+    case 'height_weight':
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${(pk.height/10).toFixed(1)} m &nbsp;/&nbsp; ${(pk.weight/10).toFixed(1)} kg</span>`;
+
+    case 'catch_rate':{
+      const rate=sp.capture_rate;
+      const pct=((rate/255)*100).toFixed(1);
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${rate}/255 (~${pct}% at full HP, Poké Ball)</span>`;
+    }
+
+    case 'base_friendship':
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${sp.base_happiness??'—'}/255</span>`;
+
+    case 'growth_rate':
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${capWords(sp.growth_rate.name)}</span>`;
+
+    case 'genus':{
+      const en=sp.genera?.find(g=>g.language.name==='en');
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${en?en.genus:'Unknown'}</span>`;
+    }
+
+    case 'region':{
+      const genName=sp.generation.name;
+      const genNum=parseInt(genName.replace('generation-romani','').replace('generation-','').replace(/[ivxlcdm]/gi,(m,i,s)=>{
+        const map={i:1,v:5,x:10,l:50,c:100,d:500,m:1000};
+        return map[m.toLowerCase()]||m;
+      }));
+      const regions={1:'Kanto',2:'Johto',3:'Hoenn',4:'Sinnoh',5:'Unova',6:'Kalos',7:'Alola',8:'Galar',9:'Paldea'};
+      const romanMap={'i':1,'ii':2,'iii':3,'iv':4,'v':5,'vi':6,'vii':7,'viii':8,'ix':9};
+      const rom=genName.replace('generation-','');
+      const gNum=romanMap[rom]||0;
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${regions[gNum]||capWords(genName)}</span>`;
+    }
+
+    case 'gender_ratio':{
+      if(sp.gender_rate===-1)return`<span style="font-size:13px;color:var(--color-text-primary);">Genderless</span>`;
+      const femPct=Math.round(sp.gender_rate/8*100);
+      return`<span style="font-size:13px;color:var(--color-text-primary);">♂ ${100-femPct}% / ♀ ${femPct}%</span>`;
+    }
+
+    case 'cry':{
+      const cryUrl=`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pk.id}.ogg`;
+      const legacyUrl=`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/${pk.id}.ogg`;
+      const btnId='cry-btn-'+pk.id;
+      setTimeout(()=>{
+        const btn=document.getElementById(btnId);
+        if(btn){
+          btn.onclick=()=>{
+            btn.textContent='Playing...';
+            const audio=new Audio(cryUrl);
+            audio.play().catch(()=>{
+              const audio2=new Audio(legacyUrl);
+              audio2.play().catch(()=>{btn.textContent='No cry available';});
+              audio2.onended=()=>{btn.textContent='Play cry again';};
+            });
+            audio.onended=()=>{btn.textContent='Play cry again';};
+          };
+        }
+      },100);
+      return`<button class="play-cry-btn" id="${btnId}">Play cry</button>`;
+    }
+
+    case 'habitat':
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${sp.habitat?capWords(sp.habitat.name):'Unknown'}</span>`;
+
+    case 'base_exp':
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${pk.base_experience??'—'} XP</span>`;
+
+    case 'ev_yield':{
+      const yields=pk.stats.filter(s=>s.effort>0).map(s=>`+${s.effort} ${({hp:'HP',attack:'Atk',defense:'Def','special-attack':'SpA','special-defense':'SpD',speed:'Spe'})[s.stat.name]||s.stat.name}`);
+      return`<span style="font-size:13px;color:var(--color-text-primary);">${yields.join(', ')||'None'}</span>`;
+    }
+
+    case 'flavor':{
+      const entries=sp.flavor_text_entries.filter(f=>f.language.name==='en');
+      const en=entries[entries.length-1]||entries[0];
+      const txt=en?en.flavor_text.replace(/\f|\n|\r/g,' '):'No entry found.';
+      return`<span style="font-size:12px;color:var(--color-text-primary);font-style:italic;line-height:1.5;">"${txt}"</span>`;
+    }
+
+    default:return'—';
+  }
+}
+
+function submitGuess(){
+  const val=document.getElementById('guess-input').value.trim().toLowerCase().replace(/\s+/g,'-');
+  if(!val)return;
+  const correctName=pkData.name.toLowerCase();
+  const correctDisplay=pkSpecies.names?.find(n=>n.language.name==='en')?.name||cap(pkData.name);
+  const fb=document.getElementById('guess-feedback');
+  if(val===correctName||val===correctDisplay.toLowerCase()){
+    showResult(true,correctDisplay);
+  }else{
+    wrongGuesses++;
+    updateScores();
+    fb.style.color='var(--color-text-danger)';
+    fb.textContent='Not quite! Try again.';
+    setTimeout(()=>{if(fb.style.color)fb.textContent='';},2000);
+  }
+}
+
+function giveUp(){
+  const correctDisplay=pkSpecies.names?.find(n=>n.language.name==='en')?.name||cap(pkData.name);
+  showResult(false,correctDisplay);
+}
+
+function showResult(won,correctDisplay){
+  const banner=document.getElementById('result-banner');
+  const sprite=document.getElementById('pksprite');
+  sprite.src=pkData.sprites.other?.['official-artwork']?.front_default||pkData.sprites.front_default||'';
+  document.getElementById('result-name').textContent=correctDisplay+(won?'':' (you gave up)');
+  let rating='';
+  if(!won)rating='Better luck next time!';
+  else if(usedPts===0)rating='Perfect — no hints used!';
+  else if(usedPts<=10)rating='Incredible!';
+  else if(usedPts<=25)rating='Excellent!';
+  else if(usedPts<=45)rating='Well done!';
+  else if(usedPts<=70)rating='Not bad!';
+  else rating='Keep practicing!';
+  document.getElementById('result-score').textContent=won?`${usedPts} pts · ${hintsTaken} hints · ${wrongGuesses} wrong · ${rating}`:rating;
+  banner.style.background=won?'var(--color-background-success)':'var(--color-background-danger)';
+  banner.style.border=`0.5px solid ${won?'var(--color-border-success)':'var(--color-border-danger)'}`;
+  document.getElementById('result-area').style.display='block';
+  document.getElementById('guess-feedback').textContent='';
+}
+
+const gInput=document.getElementById('guess-input');
+const acList=document.getElementById('ac-list');
+gInput.addEventListener('input',()=>{
+  const q=gInput.value.toLowerCase().replace(/\s+/g,'-');
+  acList.innerHTML='';
+  if(!q||q.length<2){acList.style.display='none';return;}
+  const matches=allPokemon.filter(p=>p.name.startsWith(q)).slice(0,7);
+  if(!matches.length){acList.style.display='none';return;}
+  matches.forEach(m=>{
+    const d=document.createElement('div');
+    d.className='ac-item';
+    d.textContent=capWords(m.name);
+    d.onclick=()=>{gInput.value=capWords(m.name);acList.style.display='none';};
+    acList.appendChild(d);
+  });
+  acList.style.display='block';
+});
+gInput.addEventListener('keydown',e=>{if(e.key==='Enter')submitGuess();});
+document.addEventListener('click',e=>{if(!gInput.contains(e.target)&&!acList.contains(e.target))acList.style.display='none';});
+
+newGame();
+</script>
