@@ -425,32 +425,45 @@
 const TYPE_COLORS={normal:'#A8A77A',fire:'#EE8130',water:'#6390F0',electric:'#F7D02C',grass:'#7AC74C',ice:'#96D9D6',fighting:'#C22E28',poison:'#A33EA1',ground:'#E2BF65',flying:'#A98FF3',psychic:'#F95587',bug:'#A6B91A',rock:'#B6A136',ghost:'#735797',dragon:'#6F35FC',dark:'#705746',steel:'#B7B7CE',fairy:'#D685AD',stellar:'#40B5A5',unknown:'#68A090'};
 
 const HINTS=[
-  {id:'dex_number',label:'Pokédex number',cost:3,icon:'🔢'},
-  {id:'generation',label:'Generation',cost:5,icon:'📅'},
-  {id:'legendary',label:'Legendary status',cost:4,icon:'🏆'},
+  // 🔴 Tier S (game-breaking)
+  {id:'dex_number',label:'Pokédex number',cost:10,icon:'🔢'},
+  {id:'type',label:'Type(s)',cost:12,icon:'🔥'},
+  // 🟠 Tier A (muy fuertes)
+  {id:'evolution_stage',label:'Evolution stage',cost:8,icon:'🌱'},
+  {id:'weaknesses',label:'Type weaknesses',cost:9,icon:'⚠️'},
+  {id:'resistances',label:'Type resistances',cost:9,icon:'🛡️'},
+  {id:'scrambled',label:'Scrambled name',cost:8,icon:'🔀'},
+  // 🟡 Tier B (útiles)
+  {id:'generation',label:'Generation',cost:7,icon:'📅'},
   {id:'color',label:'Pokédex color',cost:6,icon:'🎨'},
   {id:'shape',label:'Body shape',cost:6,icon:'🔷'},
-  {id:'evolution_stage',label:'Evolution stage',cost:5,icon:'🌱'},
-  {id:'evo_method',label:'How it evolves',cost:9,icon:'🔄'},
-  {id:'bst',label:'Base stat total',cost:6,icon:'📊'},
-  {id:'type',label:'Type(s)',cost:8,icon:'🔥'},
-  {id:'weaknesses',label:'Type weaknesses',cost:11,icon:'⚠️'},
-  {id:'stats',label:'Full stat spread',cost:12,icon:'📈'},
-  {id:'abilities',label:'Abilities',cost:10,icon:'✨'},
-  {id:'egg_group',label:'Egg group(s)',cost:8,icon:'🥚'},
-  {id:'height_weight',label:'Height & weight',cost:7,icon:'📏'},
-  {id:'catch_rate',label:'Catch rate',cost:5,icon:'🎯'},
-  {id:'base_friendship',label:'Base friendship',cost:5,icon:'💛'},
-  {id:'growth_rate',label:'Growth rate',cost:5,icon:'📉'},
-  {id:'genus',label:'Species (genus)',cost:9,icon:'🏷️'},
-  {id:'region',label:'Region',cost:6,icon:'🗺️'},
-  {id:'gender_ratio',label:'Gender ratio',cost:6,icon:'⚥'},
-  {id:'cry',label:'Cry (audio)',cost:14,icon:'🔊'},
-  {id:'habitat',label:'Habitat',cost:7,icon:'🌿'},
-  {id:'base_exp',label:'Base experience',cost:6,icon:'⭐'},
-  {id:'ev_yield',label:'EV yield',cost:8,icon:'💪'},
-  {id:'flavor',label:'Pokédex entry',cost:18,icon:'📖'},
+  {id:'evo_method_to',label:'Evolution method (into this)',cost:7,icon:'🔄'},
+  {id:'evo_method_from',label:'Evolution method (from this)',cost:7,icon:'➡️'},
+  {id:'stats',label:'Full stat spread',cost:6,icon:'📈'},
+  {id:'abilities',label:'Abilities',cost:6,icon:'✨'},
+  {id:'region',label:'Region',cost:7,icon:'🗺️'},
+  {id:'habitat',label:'Habitat',cost:5,icon:'🌿'},
+  {id:'first_letter',label:'First letter',cost:5,icon:'🔤'},
+  {id:'evo_count',label:'Evolution count',cost:5,icon:'⛓️'},
+  // 🔵 Tier C (relleno / bajo impacto)
+  {id:'bst',label:'Base stat total',cost:4,icon:'📊'},
+  {id:'legendary',label:'Legendary status',cost:3,icon:'🏆'},
+  {id:'egg_group',label:'Egg group(s)',cost:5,icon:'🥚'},
+  {id:'height_weight',label:'Height & weight',cost:4,icon:'📏'},
+  {id:'catch_rate',label:'Catch rate',cost:3,icon:'🎯'},
+  {id:'base_friendship',label:'Base friendship',cost:3,icon:'💛'},
+  {id:'growth_rate',label:'Growth rate',cost:3,icon:'📉'},
+  {id:'gender_ratio',label:'Gender ratio',cost:4,icon:'⚥'},
+  {id:'base_exp',label:'Base experience',cost:4,icon:'⭐'},
+  {id:'ev_yield',label:'EV yield',cost:5,icon:'💪'},
+  // 🎁 Especiales
+  {id:'genus',label:'Species',cost:9,icon:'🏷️'},
+  {id:'cry',label:'Cry (audio)',cost:12,icon:'🔊'},
+  {id:'flavor',label:'Pokédex entry',cost:14,icon:'📖'},
+  {id:'silhouette',label:'Silhouette',cost:16,icon:'👤'},
 ];
+
+let startTime = 0;
 
 function cpClass(c){
   if(c<=6)return'cost-low';
@@ -524,6 +537,7 @@ async function newGame(){
     renderButtons();
     document.getElementById('loading').style.display='none';
     document.getElementById('game').style.display='block';
+	startTime = Date.now();
   }catch(e){
     document.getElementById('load-msg').textContent='Error — retrying...';
     setTimeout(newGame,2000);
@@ -571,14 +585,15 @@ function typePill(name){
 
 function getEvoStage(){
   const stages=[];
-  function walk(node,depth){
-    stages.push({name:node.species.name,depth,details:node.evolution_details});
-    node.evolves_to.forEach(n=>walk(n,depth+1));
+  function walk(node,depth,parent){
+    stages.push({name:node.species.name,depth,detailsTo:node.evolution_details,children:node.evolves_to,parent});
+    node.evolves_to.forEach(n=>walk(n,depth+1,node));
   }
-  walk(pkEvoChain.chain,0);
-  const me=stages.find(s=>s.name===pkData.species.name||s.name===pkSpecies.name);
+  walk(pkEvoChain.chain,0,null);
+  const myName=pkSpecies.name;
+  const me=stages.find(s=>s.name===myName);
   const maxDepth=Math.max(...stages.map(s=>s.depth));
-  return{stage:me?(me.depth+1):1,total:maxDepth+1,details:me?me.details:[]};
+  return{stage:me?(me.depth+1):1,total:maxDepth+1,detailsTo:me?me.detailsTo:[],childrenNodes:me?me.children:[]};
 }
 
 function getHintHTML(id){
@@ -604,10 +619,10 @@ function getHintHTML(id){
       const labels=['','Basic','Stage 1','Stage 2','Stage 3'];
       return`<span style="font-size:13px;color:var(--text);">${labels[stage]||'Stage '+stage} (${stage}/${total}${total===1?' — standalone':''})</span>`;
     }
-    case 'evo_method':{
-      const{details}=getEvoStage();
-      if(!details||!details.length)return`<span style="font-size:13px;color:var(--text2);">Base form — does not evolve from anything</span>`;
-      const d=details[0];const parts=[];
+    case 'evo_method_to':{
+      const{detailsTo}=getEvoStage();
+      if(!detailsTo||!detailsTo.length)return`<span style="font-size:13px;color:var(--text2);">Base form — does not evolve from anything</span>`;
+      const d=detailsTo[0];const parts=[];
       if(d.trigger?.name==='level-up'){if(d.min_level)parts.push(`Level ${d.min_level}`);else parts.push('Level up');}
       else if(d.trigger?.name==='use-item'&&d.item)parts.push(`Use ${capWords(d.item.name)}`);
       else if(d.trigger?.name==='trade')parts.push('Trade'+(d.held_item?` holding ${capWords(d.held_item.name)}`:''));
@@ -623,6 +638,29 @@ function getHintHTML(id){
       if(d.gender===1)parts.push('Female');if(d.gender===2)parts.push('Male');
       return`<span style="font-size:13px;color:var(--text);">${parts.join(' + ')||'Special condition'}</span>`;
     }
+    case 'evo_method_from':{
+      const{childrenNodes}=getEvoStage();
+      if(!childrenNodes||!childrenNodes.length)return`<span style="font-size:13px;color:var(--text2);">Final form — does not evolve further</span>`;
+      return childrenNodes.map(child=>{
+        const details=child.evolution_details||[];
+        if(!details.length)return`<span style="font-size:13px;color:var(--text2);">Special condition</span>`;
+        const d=details[0];const parts=[];
+        if(d.trigger?.name==='level-up'){if(d.min_level)parts.push(`Level ${d.min_level}`);else parts.push('Level up');}
+        else if(d.trigger?.name==='use-item'&&d.item)parts.push(`Use ${capWords(d.item.name)}`);
+        else if(d.trigger?.name==='trade')parts.push('Trade'+(d.held_item?` holding ${capWords(d.held_item.name)}`:''));
+        else if(d.trigger)parts.push(capWords(d.trigger.name));
+        if(d.min_happiness)parts.push(`High friendship (≥${d.min_happiness})`);
+        if(d.time_of_day)parts.push(`During ${d.time_of_day}`);
+        if(d.known_move)parts.push(`Knowing ${capWords(d.known_move.name)}`);
+        if(d.location)parts.push(`At ${capWords(d.location.name)}`);
+        if(d.held_item&&d.trigger?.name!=='trade')parts.push(`Holding ${capWords(d.held_item.name)}`);
+        if(d.min_beauty)parts.push('High beauty');
+        if(d.needs_overworld_rain)parts.push('In rain');
+        if(d.turn_upside_down)parts.push('Turn console upside down');
+        if(d.gender===1)parts.push('Female');if(d.gender===2)parts.push('Male');
+        return`<span style="font-size:13px;color:var(--text);">${parts.join(' + ')||'Special condition'}</span>`;
+      }).join('<br>');
+    }
     case 'bst':{
       const bst=pk.stats.reduce((s,x)=>s+x.base_stat,0);
       return`<span style="font-size:15px;font-weight:700;color:var(--text);">${bst}</span>`;
@@ -634,14 +672,22 @@ function getHintHTML(id){
       const mult=calcDefenses(types);
       const x4=Object.entries(mult).filter(([,v])=>v===4).map(([t])=>t);
       const x2=Object.entries(mult).filter(([,v])=>v===2).map(([t])=>t);
-      const half=Object.entries(mult).filter(([,v])=>v===0.5).map(([t])=>t);
-      const immune=Object.entries(mult).filter(([,v])=>v===0).map(([t])=>t);
       let out='';
       if(x4.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×4 </span>`+x4.map(typePill).join('')+'</div>';
       if(x2.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×2 </span>`+x2.map(typePill).join('')+'</div>';
-      if(half.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">½ </span>`+half.map(typePill).join('')+'</div>';
-      if(immune.length)out+=`<div><span style="font-size:10px;color:var(--text3);">0× </span>`+immune.map(typePill).join('')+'</div>';
       return out||'<span style="font-size:13px;color:var(--text2);">No weaknesses</span>';
+    }
+    case 'resistances':{
+      const types=pk.types.map(t=>t.type.name);
+      const mult=calcDefenses(types);
+      const quarter=Object.entries(mult).filter(([,v])=>v===0.25).map(([t])=>t);
+      const half=Object.entries(mult).filter(([,v])=>v===0.5).map(([t])=>t);
+      const immune=Object.entries(mult).filter(([,v])=>v===0).map(([t])=>t);
+      let out='';
+      if(immune.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×0 </span>`+immune.map(typePill).join('')+'</div>';
+      if(quarter.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">¼ </span>`+quarter.map(typePill).join('')+'</div>';
+      if(half.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">½ </span>`+half.map(typePill).join('')+'</div>';
+      return out||'<span style="font-size:13px;color:var(--text2);">No resistances or immunities</span>';
     }
     case 'stats':{
       const names={hp:'HP',attack:'Atk',defense:'Def','special-attack':'SpA','special-defense':'SpD',speed:'Spe'};
@@ -698,7 +744,7 @@ function getHintHTML(id){
       return`<button class="play-cry-btn" id="${btnId}">🔊 Play cry</button>`;
     }
     case 'habitat':
-      return`<span style="font-size:13px;color:var(--text);">${sp.habitat?capWords(sp.habitat.name):'Unknown'}</span>`;
+      return`<span style="font-size:13px;color:var(--text);">${sp.habitat?capWords(sp.habitat.name):'<span style="color:var(--text3);">Not recorded in Pokédex</span>'}</span>`;
     case 'base_exp':
       return`<span style="font-size:13px;color:var(--text);">${pk.base_experience??'—'} XP</span>`;
     case 'ev_yield':{
@@ -708,9 +754,31 @@ function getHintHTML(id){
     case 'flavor':{
       const entries=sp.flavor_text_entries.filter(f=>f.language.name==='en');
       const en=entries[entries.length-1]||entries[0];
-      const txt=en?en.flavor_text.replace(/\f|\n|\r/g,' '):'No entry found.';
+      const txt=en?en.flavor_text.replace(/\f|\n|\r/g,' ').replace(new RegExp(pkSpecies.name,'gi'), '___'):'No entry found.';
       return`<span style="font-size:12px;color:var(--text);font-style:italic;line-height:1.6;">"${txt}"</span>`;
     }
+	case 'silhouette': {
+	  const img = pk.sprites.other?.['official-artwork']?.front_default || pk.sprites.front_default;
+	  return `<img src="${img}" style="width:100px;image-rendering:pixelated;filter: brightness(0) invert(1);opacity:0.9;">`;
+	}
+	case 'first_letter':
+	  return `<span style="font-size:14px;font-weight:600;">${pkSpecies.name[0].toUpperCase()}</span>`;
+	case 'scrambled': {
+	  const name = pkSpecies.name;
+	  const shuffled = name.split('').sort(()=>Math.random()-0.5).join('');
+	  return `<span>${shuffled}</span>`;
+	}
+	case 'evo_count': {
+	  let count = 0;
+	  function walk(node){
+		if(node.evolves_to.length){
+		  count += node.evolves_to.length;
+		  node.evolves_to.forEach(walk);
+		}
+	  }
+	  walk(pkEvoChain.chain);
+	  return `<span>${count} evolution(s) in chain</span>`;
+	}
     default:return'—';
   }
 }
@@ -742,14 +810,33 @@ function showResult(won,correctDisplay){
   sprite.src=pkData.sprites.other?.['official-artwork']?.front_default||pkData.sprites.front_default||'';
   document.getElementById('result-name').textContent=correctDisplay+(won?'':' (you gave up)');
   let rating='';
-  if(!won)rating='Better luck next time!';
-  else if(usedPts===0)rating='🏆 Perfect — no hints!';
-  else if(usedPts<=10)rating='⚡ Incredible!';
-  else if(usedPts<=25)rating='✨ Excellent!';
-  else if(usedPts<=45)rating='👍 Well done!';
-  else if(usedPts<=70)rating='Not bad!';
-  else rating='Keep practicing!';
-  document.getElementById('result-score').textContent=won?`${usedPts} pts · ${hintsTaken} hints · ${wrongGuesses} wrong · ${rating}`:rating;
+  if(!won){
+	rating='Better luck next time!';
+	document.getElementById('result-score').textContent=rating;
+  }
+  else{
+	const timeTaken = (Date.now() - startTime) / 1000;
+	let hintPenalty = usedPts * 10;
+	let wrongPenalty = 0;
+	for(let i=1;i<=wrongGuesses;i++){
+	  wrongPenalty += i * 25;
+	}
+	const timePenalty = Math.min(timeTaken * 2, 200);
+	let efficiencyBonus = 0;
+	if(hintsTaken === 0) efficiencyBonus += 200;
+	else if(hintsTaken <= 2) efficiencyBonus += 120;
+	else if(hintsTaken <= 4) efficiencyBonus += 60;
+	let riskBonus = 0;
+	if(wrongGuesses === 0) riskBonus += 100;
+	else if(wrongGuesses === 1) riskBonus += 50;
+	const finalScore = Math.max(0, 1000 - hintPenalty - wrongPenalty - timePenalty + efficiencyBonus + riskBonus);
+	if (finalScore>=900)rating='🏆 Master Trainer';
+	else if(finalScore>=750)rating='🔥 Elite Four';
+	else if(finalScore>=600)rating='⚡ Gym Leader';
+	else if(finalScore>=450)rating='👍 Trainer';
+	else rating='🌱 Beginner';
+	document.getElementById('result-score').textContent=`Score: ${Math.round(finalScore)} · ${hintsTaken} hints · ${wrongGuesses} wrong · ${Math.round(timeTaken)}s · ${rating}`;
+  }
   banner.className='';
   banner.id='result-banner';
   banner.classList.add(won?'won':'lost');
