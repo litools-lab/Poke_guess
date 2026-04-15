@@ -476,6 +476,7 @@ function capWords(s){return s?s.split(/[-_ ]/).map(cap).join(' '):'';}
 let pkData=null,pkSpecies=null,pkEvoChain=null,typeData={};
 let usedPts=0,hintsTaken=0,wrongGuesses=0,revealed=new Set();
 let allPokemon=[],totalCount=0;
+let flavorHint = null;
 
 async function fetchJSON(url){
   const r=await fetch(url);
@@ -512,6 +513,25 @@ function calcDefenses(typeNames){
   return mult;
 }
 
+async function prepareFlavorHint() {
+  const entries = pkSpecies.flavor_text_entries.filter(f => f.language.name === 'en');
+  if (!entries.length) {
+    flavorHint = {
+      text: 'No entry found.',
+      version: ''
+    };
+    return;
+  }
+  const randomEntry = entries[Math.floor(Math.random() * entries.length)];
+  const text = randomEntry.flavor_text.replace(/\f|\n|\r/g, ' ').replace(new RegExp(pkSpecies.name, 'gi'), '___');
+  const vData = await fetchJSON(randomEntry.version.url);
+  const versionName =vData.names.find(n => n.language.name === 'en')?.name||capWords(vData.name);
+  flavorHint = {
+    text,
+    version: versionName
+  };
+}
+
 async function newGame(){
   document.getElementById('game').style.display='none';
   document.getElementById('loading').style.display='flex';
@@ -534,6 +554,7 @@ async function newGame(){
     const pkId=pkSpecies.id;
     pkData=await fetchJSON(`https://pokeapi.co/api/v2/pokemon/${pkId}`);
     pkEvoChain=await fetchJSON(pkSpecies.evolution_chain.url);
+	await prepareFlavorHint();
     renderButtons();
     document.getElementById('loading').style.display='none';
     document.getElementById('game').style.display='block';
@@ -752,10 +773,7 @@ function getHintHTML(id){
       return`<span style="font-size:13px;color:var(--text);">${yields.join(', ')||'None'}</span>`;
     }
     case 'flavor':{
-      const entries=sp.flavor_text_entries.filter(f=>f.language.name==='en');
-      const en=entries[entries.length-1]||entries[0];
-      const txt=en?en.flavor_text.replace(/\f|\n|\r/g,' ').replace(new RegExp(pkSpecies.name,'gi'), '___'):'No entry found.';
-      return`<span style="font-size:12px;color:var(--text);font-style:italic;line-height:1.6;">"${txt}"</span>`;
+      return`<span style="font-size:12px;color:var(--text);font-style:italic;line-height:1.6;">(Pokémon ${flavorHint.version}) "${flavorHint.text}"</span>`;
     }
 	case 'silhouette': {
 	  const img = pk.sprites.other?.['official-artwork']?.front_default || pk.sprites.front_default;
