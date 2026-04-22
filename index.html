@@ -240,7 +240,7 @@ const I18N = {
     h_genus:'Species',h_cry:'Cry (audio)',h_flavor:'Pokédex entry',h_silhouette:'Silhouette',
   },
   es: {
-    header_line1:'¿QUIÉN ES',header_line2:'ESE POKÉMON?',
+    header_line1:'¿DE QUIÉN ES',header_line2:'ESE POKÉMON?',
     load_dex:'Cargando la Pokédex completa...',load_random:'Cargando un Pokémon aleatorio...',load_error:'Error — reintentando...',
     pts_label:'Puntos usados',hints_label:'Pistas usadas',wrong_label:'Errores',
     hints_section:'Pistas — haz clic para revelar',guess_section:'Tu respuesta',
@@ -487,11 +487,13 @@ const HINT_IDS=[
 ];
 
 let currentLang='en';
-let pkData=null,pkSpecies=null,pkEvoChain=null,typeData={};
+let pkData=null,pkSpecies=null,pkEvoChain=null,typeData={},typeNames={};
 let usedPts=0,hintsTaken=0,wrongGuesses=0,revealed=new Set();
 let allPokemon=[],totalCount=0;
-let flavorCache={};   // lang -> {text, version}
-let scrambledCache=null;
+let flavorCache={};        // lang -> {text, version}
+let flavorEntryIndex=null; // fixed random index for flavor entry per game
+let scrambledCache={};     // lang -> scrambled string
+let localizedNameCache={}; // lang -> {colors, shapes, regions} (loaded lazily)
 let startTime=0,gameOver=false,lastResultWon=false,lastScoreData=null;
 
 function cpClass(c){return c<=6?'cost-low':c<=11?'cost-mid':'cost-high';}
@@ -521,8 +523,8 @@ function selectLang(el){
 
 function applyI18n(){
   // Header
-  //const logo=document.getElementById('header-logo');
-  //logo.innerHTML=`${t('header_line1')}<br><span>${t('header_line2')}</span>`;
+  const logo=document.getElementById('header-logo');
+  logo.innerHTML=`${t('header_line1')}<br><span>${t('header_line2')}</span>`;
   // Static labels
   document.getElementById('lbl-pts').textContent=t('pts_label');
   document.getElementById('lbl-hints').textContent=t('hints_label');
@@ -544,10 +546,10 @@ function rerenderRevealedHints(){
     const lbl=row.querySelector('.revealed-label');
     const val=row.querySelector('.revealed-value');
     if(lbl)lbl.innerHTML=`${h.icon} ${t('h_'+id)}`;
-    // Re-render value only for language-dependent hints
+    // Re-render value for all language-dependent hints
     if(val&&['first_letter','scrambled','flavor','legendary','gender_ratio','evolution_stage',
               'evo_method_to','evo_method_from','evo_count','weaknesses','resistances',
-              'habitat','genus'].includes(id)){
+              'habitat','genus','type','color','shape','region'].includes(id)){
       if(id==='flavor'){
         // async: show cached if available
         const cached=flavorCache[currentLang];
@@ -596,11 +598,73 @@ async function loadAllPokemon(){
 async function loadTypeChart(){
   const res=await fetchJSON('https://pokeapi.co/api/v2/type?limit=100');
   const types=res.results.map(x=>x.name).filter(x=>x!=='unknown'&&x!=='shadow');
-  await Promise.all(types.map(async tn=>{const td=await fetchJSON(`https://pokeapi.co/api/v2/type/${tn}`);typeData[tn]=td.damage_relations;}));
+  await Promise.all(types.map(async tn=>{
+    const td=await fetchJSON(`https://pokeapi.co/api/v2/type/${tn}`);
+    typeData[tn]=td.damage_relations;
+    // Store localized names: {en:'Normal', es:'Normal', fr:'Normal', ...}
+    typeNames[tn]={};
+    td.names.forEach(n=>{typeNames[tn][n.language.name]=n.name;});
+  }));
 }
-function calcDefenses(typeNames){
+// Return localized type name, fallback to capWords of api name
+function getTypeName(apiName){
+  const names=typeNames[apiName];
+  if(!names)return cap(apiName);
+  return names[currentLang]||names['en']||cap(apiName);
+}
+function typePill(apiName){
+  const c=TYPE_COLORS[apiName]||'#888';
+  return`<span class="type-pill" style="background:${c}25;color:${c};border:1px solid ${c}55;">${getTypeName(apiName)}</span>`;
+}
+
+// Localized lookup caches: colorNames[apiName][lang], shapeNames[apiName][lang]
+const colorNames={}, shapeNames={};
+async function getLocalizedColor(colorObj){
+  const n=colorObj.name;
+  if(!colorNames[n]){
+    try{
+      const d=await fetchJSON(colorObj.url);
+      colorNames[n]={};
+      d.names.forEach(x=>{colorNames[n][x.language.name]=x.name;});
+    }catch{colorNames[n]={};}
+  }
+  return colorNames[n][currentLang]||colorNames[n]['en']||cap(n);
+}
+async function getLocalizedShape(shapeObj){
+  if(!shapeObj)return t('unknown');
+  const n=shapeObj.name;
+  if(!shapeNames[n]){
+    try{
+      const d=await fetchJSON(shapeObj.url);
+      shapeNames[n]={};
+      // shape uses awesome_names for localized labels, fallback to names
+      const src=d.awesome_names?.length?d.awesome_names:d.names;
+      src.forEach(x=>{shapeNames[n][x.language.name]=x.awesome_name||x.name;});
+    }catch{shapeNames[n]={};}
+  }
+  return shapeNames[n][currentLang]||shapeNames[n]['en']||cap(n);
+}
+
+// Region names per language (map from generation slug -> localized region)
+const regionNameCache={}; // generationName -> {lang: name}
+async function getLocalizedRegion(generationUrl,generationSlug){
+  if(!regionNameCache[generationSlug]){
+    try{
+      const d=await fetchJSON(generationUrl);
+      regionNameCache[generationSlug]={};
+      // get region name from the main_region
+      if(d.main_region){
+        const rd=await fetchJSON(d.main_region.url);
+        rd.names.forEach(x=>{regionNameCache[generationSlug][x.language.name]=x.name;});
+      }
+    }catch{regionNameCache[generationSlug]={};}
+  }
+  const names=regionNameCache[generationSlug];
+  return names[currentLang]||names['en']||generationSlug;
+}
+function calcDefenses(defTypeNames){
   const m={};Object.keys(TYPE_COLORS).forEach(x=>m[x]=1);
-  typeNames.forEach(dt=>{
+  defTypeNames.forEach(dt=>{
     const r=typeData[dt];if(!r)return;
     r.double_damage_from?.forEach(x=>m[x.name]=(m[x.name]||1)*2);
     r.half_damage_from?.forEach(x=>m[x.name]=(m[x.name]||1)*0.5);
@@ -619,7 +683,10 @@ async function getFlavorHint(lang){
   const pool=pkSpecies.flavor_text_entries.filter(f=>f.language.name===lang);
   const src=pool.length?pool:pkSpecies.flavor_text_entries.filter(f=>f.language.name==='en');
   if(!src.length){flavorCache[lang]={text:t('not_found'),version:''};return flavorCache[lang];}
-  const entry=src[Math.floor(Math.random()*src.length)];
+  // Use the same fixed index for each language so it's the same game version
+  // (pick entry at same relative position in the lang pool, or same absolute index)
+  if(flavorEntryIndex===null) flavorEntryIndex=Math.floor(Math.random()*src.length);
+  const entry=src[Math.min(flavorEntryIndex,src.length-1)];
   let text=entry.flavor_text.replace(/\f|\n|\r/g,' ');
   [pkSpecies.name,getLocalizedName('en'),getLocalizedName(lang)].filter(Boolean).forEach(n=>{
     text=text.replace(new RegExp(n,'gi'),'___');
@@ -642,7 +709,7 @@ async function newGame(){
   document.getElementById('guess-feedback').textContent='';
   document.getElementById('ac-list').style.display='none';
   revealed=new Set();usedPts=0;hintsTaken=0;wrongGuesses=0;gameOver=false;lastScoreData=null;
-  flavorCache={};scrambledCache=null;
+  flavorCache={};scrambledCache={};flavorEntryIndex=null;
   updateScores();
   try{
     document.getElementById('load-msg').textContent=t('load_dex');
@@ -652,6 +719,10 @@ async function newGame(){
     pkSpecies=await fetchJSON(`https://pokeapi.co/api/v2/pokemon-species/${pick.name}`);
     pkData=await fetchJSON(`https://pokeapi.co/api/v2/pokemon/${pkSpecies.id}`);
     pkEvoChain=await fetchJSON(pkSpecies.evolution_chain.url);
+    // Preload localized data in background (non-blocking)
+    if(pkSpecies.color?.url)getLocalizedColor(pkSpecies.color);
+    if(pkSpecies.shape?.url)getLocalizedShape(pkSpecies.shape);
+    if(pkSpecies.generation?.url)getLocalizedRegion(pkSpecies.generation.url,pkSpecies.generation.name);
     applyI18n();
     renderButtons();
     document.getElementById('loading').style.display='none';
@@ -697,7 +768,6 @@ async function revealHint(h){
   list.prepend(div);
 }
 
-function typePill(name){const c=TYPE_COLORS[name]||'#888';return`<span class="type-pill" style="background:${c}25;color:${c};border:1px solid ${c}55;">${cap(name)}</span>`;}
 function getEvoStage(){
   const s=[];
   function w(node,d){s.push({name:node.species.name,depth:d,detailsTo:node.evolution_details,children:node.evolves_to});node.evolves_to.forEach(n=>w(n,d+1));}
@@ -733,8 +803,27 @@ function getHintHTML(id){
       const c=sp.is_legendary||sp.is_mythical?'var(--yellow)':'var(--text2)';
       return`<span style="font-size:13px;color:${c};font-weight:600;">${s}</span>`;
     }
-    case 'color':return`<span style="font-size:13px;">${capWords(sp.color.name)}</span>`;
-    case 'shape':return`<span style="font-size:13px;">${sp.shape?capWords(sp.shape.name):t('unknown')}</span>`;
+    case 'color':{
+      const cn=sp.color?.name||'';
+      const cachedMap=colorNames[cn];
+      if(cachedMap){const name=cachedMap[currentLang]||cachedMap['en'];if(name)return`<span style="font-size:13px;">${name}</span>`;}
+      if(sp.color?.url){
+        getLocalizedColor(sp.color).then(name=>{
+          document.querySelectorAll('.revealed-row').forEach(r=>{if(r.dataset.hintId==='color'){const v=r.querySelector('.revealed-value');if(v)v.innerHTML=`<span style="font-size:13px;">${name}</span>`;}});
+        });
+      }
+      return`<span style="font-size:13px;">${capWords(cn)}</span>`;
+    }
+    case 'shape':{
+      if(!sp.shape)return`<span style="font-size:13px;">${t('unknown')}</span>`;
+      const sn=sp.shape.name;
+      const cachedMap=shapeNames[sn];
+      if(cachedMap){const name=cachedMap[currentLang]||cachedMap['en'];if(name)return`<span style="font-size:13px;">${name}</span>`;}
+      getLocalizedShape(sp.shape).then(name=>{
+        document.querySelectorAll('.revealed-row').forEach(r=>{if(r.dataset.hintId==='shape'){const v=r.querySelector('.revealed-value');if(v)v.innerHTML=`<span style="font-size:13px;">${name}</span>`;}});
+      });
+      return`<span style="font-size:13px;">${capWords(sn)}</span>`;
+    }
     case 'evolution_stage':{
       const{stage,total}=getEvoStage();
       const labels=t('stage_labels');
@@ -797,9 +886,19 @@ function getHintHTML(id){
       return`<span style="font-size:13px;">${g?g.genus:t('unknown')}</span>`;
     }
     case 'region':{
+      const slug=sp.generation.name;
+      const cached=regionNameCache[slug];
+      if(cached){
+        const name=cached[currentLang]||cached['en'];
+        if(name)return`<span style="font-size:13px;">${name}</span>`;
+      }
+      getLocalizedRegion(sp.generation.url,slug).then(name=>{
+        document.querySelectorAll('.revealed-row').forEach(r=>{if(r.dataset.hintId==='region'){const v=r.querySelector('.revealed-value');if(v)v.innerHTML=`<span style="font-size:13px;">${name}</span>`;}});
+      });
+      // Fallback while loading
       const rm={'i':1,'ii':2,'iii':3,'iv':4,'v':5,'vi':6,'vii':7,'viii':8,'ix':9};
       const regions={1:'Kanto',2:'Johto',3:'Hoenn',4:'Sinnoh',5:'Unova',6:'Kalos',7:'Alola',8:'Galar',9:'Paldea'};
-      return`<span style="font-size:13px;">${regions[rm[sp.generation.name.replace('generation-','')]]||capWords(sp.generation.name)}</span>`;
+      return`<span style="font-size:13px;">${regions[rm[slug.replace('generation-','')]]||capWords(slug)}</span>`;
     }
     case 'gender_ratio':{
       if(sp.gender_rate===-1)return`<span style="font-size:13px;">${t('genderless')}</span>`;
@@ -829,8 +928,11 @@ function getHintHTML(id){
     }
     case 'first_letter':{const n=getLocalizedName(currentLang);return`<span style="font-size:14px;font-weight:600;">${n[0].toUpperCase()}</span>`;}
     case 'scrambled':{
-      if(!scrambledCache){const n=getLocalizedName('en');scrambledCache=n.split('').sort(()=>Math.random()-0.5).join('');}
-      return`<span style="font-size:13px;">${scrambledCache}</span>`;
+      if(!scrambledCache[currentLang]){
+        const n=getLocalizedName(currentLang).toLowerCase();
+        scrambledCache[currentLang]=n.split('').sort(()=>Math.random()-0.5).join('');
+      }
+      return`<span style="font-size:13px;letter-spacing:2px;">${scrambledCache[currentLang]}</span>`;
     }
     case 'evo_count':{
       let c=0;function w(n){if(n.evolves_to.length){c+=n.evolves_to.length;n.evolves_to.forEach(w);}}
