@@ -8,531 +8,631 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
   :root {
-    --red: #E3350D;
-    --red-dark: #b82a0a;
-    --red-glow: #E3350D44;
-    --yellow: #FFCB05;
-    --yellow-dark: #d4a800;
-    --blue: #3B4CCA;
-    --blue-light: #6378e0;
-    --bg: #0f0f13;
-    --bg2: #18181f;
-    --bg3: #22222c;
-    --bg4: #2c2c3a;
-    --border: #35354a;
-    --border-light: #4a4a60;
-    --text: #f0f0f8;
-    --text2: #9999bb;
-    --text3: #5f5f7a;
-    --success: #2ecc71;
-    --success-bg: #0d2e1a;
-    --danger: #e74c3c;
-    --danger-bg: #2e0d0d;
-    --radius: 6px;
-    --radius-lg: 12px;
+    --red: #E3350D; --red-dark: #b82a0a; --red-glow: #E3350D44;
+    --yellow: #FFCB05; --yellow-dark: #d4a800;
+    --blue: #3B4CCA; --blue-light: #6378e0;
+    --bg: #0f0f13; --bg2: #18181f; --bg3: #22222c; --bg4: #2c2c3a;
+    --border: #35354a; --border-light: #4a4a60;
+    --text: #f0f0f8; --text2: #9999bb; --text3: #5f5f7a;
+    --success: #2ecc71; --success-bg: #0d2e1a;
+    --danger: #e74c3c; --danger-bg: #2e0d0d;
+    --radius: 6px; --radius-lg: 12px;
     --font-pixel: 'Press Start 2P', monospace;
     --font-body: 'DM Sans', sans-serif;
   }
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0;
+    background: var(--bg); color: var(--text); font-family: var(--font-body);
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -20%, #1a0a3a 0%, transparent 70%),
       repeating-linear-gradient(0deg, transparent, transparent 39px, #ffffff04 39px, #ffffff04 40px),
       repeating-linear-gradient(90deg, transparent, transparent 39px, #ffffff04 39px, #ffffff04 40px);
   }
-
-  /* Header */
   .game-header {
-    width: 100%;
-    background: var(--bg2);
-    border-bottom: 2px solid var(--red);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 20px #E3350D33;
+    width: 100%; background: var(--bg2); border-bottom: 2px solid var(--red);
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px #E3350D33;
   }
   .header-logo {
-    font-family: var(--font-pixel);
-    font-size: 10px;
-    color: var(--yellow);
+    font-family: var(--font-pixel); font-size: 10px; color: var(--yellow);
     text-shadow: 2px 2px 0 var(--yellow-dark), 0 0 20px var(--yellow);
-    letter-spacing: 1px;
-    line-height: 1.6;
+    letter-spacing: 1px; line-height: 1.6;
   }
   .header-logo span { color: var(--red); text-shadow: 2px 2px 0 var(--red-dark), 0 0 20px var(--red); }
-  .header-dots {
-    display: flex; gap: 6px; align-items: center;
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .lang-select-wrap { position: relative; }
+  .lang-btn {
+    background: var(--bg3); border: 1px solid var(--border-light); border-radius: var(--radius);
+    color: var(--text); font-family: var(--font-body); font-size: 13px;
+    padding: 6px 10px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: background 0.15s, border-color 0.15s; white-space: nowrap;
   }
-  .header-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
+  .lang-btn:hover { background: var(--bg4); border-color: var(--yellow); }
+  .lang-btn .lang-arrow { font-size: 9px; color: var(--text3); }
+  .lang-dropdown {
+    position: absolute; right: 0; top: calc(100% + 6px);
+    background: var(--bg2); border: 1px solid var(--border-light);
+    border-radius: var(--radius); min-width: 150px;
+    box-shadow: 0 8px 24px #00000088; display: none; z-index: 200; overflow: hidden;
   }
+  .lang-dropdown.open { display: block; }
+  .lang-option {
+    padding: 9px 14px; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; color: var(--text);
+    border-bottom: 1px solid var(--border); transition: background 0.1s;
+  }
+  .lang-option:last-child { border-bottom: none; }
+  .lang-option:hover { background: var(--bg3); }
+  .lang-option.active { color: var(--yellow); }
+  .lang-option .lang-native { font-size: 11px; color: var(--text3); }
+  .header-dots { display: flex; gap: 6px; align-items: center; }
+  .header-dot { width: 10px; height: 10px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
   .header-dot:nth-child(1) { background: var(--red); animation-delay: 0s; }
   .header-dot:nth-child(2) { background: var(--yellow); animation-delay: 0.3s; }
   .header-dot:nth-child(3) { background: var(--success); animation-delay: 0.6s; }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-
-  /* Main layout */
-  .game-wrap {
-    width: 100%; max-width: 700px;
-    padding: 20px 16px 40px;
-    flex: 1;
-  }
-
-  /* Loading screen */
-  #loading {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 60px 20px; gap: 20px;
-  }
+  .game-wrap { width: 100%; max-width: 700px; padding: 20px 16px 40px; flex: 1; }
+  #loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 20px; }
   .load-pokeball {
-    width: 64px; height: 64px;
-    border-radius: 50%;
+    width: 64px; height: 64px; border-radius: 50%;
     background: linear-gradient(to bottom, var(--red) 50%, var(--bg3) 50%);
-    border: 3px solid var(--border-light);
-    position: relative;
-    animation: spin 1.2s linear infinite;
-    box-shadow: 0 0 30px var(--red-glow);
+    border: 3px solid var(--border-light); position: relative;
+    animation: spin 1.2s linear infinite; box-shadow: 0 0 30px var(--red-glow);
   }
-  .load-pokeball::before {
-    content: ''; position: absolute; top: 50%; left: 0; right: 0;
-    height: 3px; background: var(--border-light); transform: translateY(-50%);
-  }
-  .load-pokeball::after {
-    content: ''; position: absolute; top: 50%; left: 50%;
-    width: 14px; height: 14px; border-radius: 50%;
-    background: var(--bg3); border: 3px solid var(--border-light);
-    transform: translate(-50%, -50%);
-  }
+  .load-pokeball::before { content:''; position:absolute; top:50%; left:0; right:0; height:3px; background:var(--border-light); transform:translateY(-50%); }
+  .load-pokeball::after { content:''; position:absolute; top:50%; left:50%; width:14px; height:14px; border-radius:50%; background:var(--bg3); border:3px solid var(--border-light); transform:translate(-50%,-50%); }
   @keyframes spin { to { transform: rotate(360deg); } }
   #load-msg { font-family: var(--font-pixel); font-size: 9px; color: var(--text2); line-height: 1.8; text-align: center; }
   #load-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
-
-  /* Score bar */
-  .score-bar {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 8px; margin-bottom: 18px;
-  }
-  .score-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 12px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .score-card::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, transparent 60%, #ffffff04);
-  }
-  .slabel {
-    font-family: var(--font-pixel);
-    font-size: 6px; color: var(--text3);
-    margin-bottom: 6px; letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .sval {
-    font-family: var(--font-pixel);
-    font-size: 14px; color: var(--text);
-    line-height: 1;
-  }
-  .sval.red { color: var(--red); }
-  .sval.yellow { color: var(--yellow); }
-  .sval.blue { color: var(--blue-light); }
-
-  /* Section label */
-  .section-label {
-    font-family: var(--font-pixel);
-    font-size: 7px; color: var(--text3);
-    letter-spacing: .1em; text-transform: uppercase;
-    margin: 18px 0 8px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-label::after {
-    content: ''; flex: 1; height: 1px;
-    background: linear-gradient(to right, var(--border), transparent);
-  }
-
-  /* Revealed hints */
+  .score-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+  .score-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; text-align: center; position: relative; overflow: hidden; }
+  .score-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, transparent 60%, #ffffff04); }
+  .slabel { font-family: var(--font-pixel); font-size: 6px; color: var(--text3); margin-bottom: 6px; letter-spacing: .08em; text-transform: uppercase; }
+  .sval { font-family: var(--font-pixel); font-size: 14px; color: var(--text); line-height: 1; }
+  .sval.red { color: var(--red); } .sval.yellow { color: var(--yellow); } .sval.blue { color: var(--blue-light); }
+  .section-label { font-family: var(--font-pixel); font-size: 7px; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .section-label::after { content:''; flex:1; height:1px; background:linear-gradient(to right, var(--border), transparent); }
   #revealed-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
-  .revealed-row {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--blue);
-    border-radius: var(--radius);
-    padding: 9px 12px;
-    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-    animation: slideIn 0.25s ease;
-  }
-  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
-  .revealed-label {
-    font-size: 10px; color: var(--text3); white-space: nowrap;
-    padding-top: 2px; display: flex; align-items: center; gap: 5px;
-  }
-
-  /* Hint buttons grid */
-  #btn-grid {
-    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 5px;
-  }
-  .hint-btn {
-    padding: 9px 11px; font-size: 11px; cursor: pointer;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    color: var(--text);
-    display: flex; justify-content: space-between; align-items: center; gap: 6px;
-    width: 100%; text-align: left;
-    font-family: var(--font-body);
-    transition: background 0.15s, border-color 0.15s, transform 0.1s;
-  }
+  .revealed-row { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: var(--radius); padding: 9px 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; animation: slideIn 0.25s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:none} }
+  .revealed-label { font-size: 10px; color: var(--text3); white-space: nowrap; padding-top: 2px; display: flex; align-items: center; gap: 5px; }
+  #btn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  .hint-btn { padding: 9px 11px; font-size: 11px; cursor: pointer; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg2); color: var(--text); display: flex; justify-content: space-between; align-items: center; gap: 6px; width: 100%; text-align: left; font-family: var(--font-body); transition: background 0.15s, border-color 0.15s, transform 0.1s; }
   .hint-btn:hover:not(:disabled) { background: var(--bg3); border-color: var(--border-light); }
   .hint-btn:active:not(:disabled) { transform: scale(0.97); }
   .hint-btn:disabled { opacity: 0.3; cursor: default; }
-
-  .cost-pill {
-    font-size: 9px; font-weight: 600;
-    padding: 2px 7px; border-radius: 20px;
-    white-space: nowrap; flex-shrink: 0;
-    font-family: var(--font-pixel);
-  }
-  .cost-low { background: #1a2e10; color: #7ec850; border: 1px solid #3a5a20; }
-  .cost-mid { background: #2e1e10; color: #e8a040; border: 1px solid #5a3a20; }
-  .cost-high { background: #2e1010; color: #e85050; border: 1px solid #5a2020; }
-
-  /* Type pills */
-  .type-pill {
-    display: inline-block; padding: 2px 10px;
-    border-radius: 20px; font-size: 11px; font-weight: 600;
-    margin: 2px 2px 2px 0; text-transform: capitalize;
-    letter-spacing: .03em;
-  }
-  .stat-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-  .stat-bar-bg { background: var(--bg4); border-radius: 4px; height: 5px; flex: 1; min-width: 60px; }
-  .stat-fill { height: 5px; border-radius: 4px; transition: width 0.4s ease; }
-
-  /* Guess input */
+  .cost-pill { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; font-family: var(--font-pixel); }
+  .cost-low { background:#1a2e10; color:#7ec850; border:1px solid #3a5a20; }
+  .cost-mid { background:#2e1e10; color:#e8a040; border:1px solid #5a3a20; }
+  .cost-high { background:#2e1010; color:#e85050; border:1px solid #5a2020; }
+  .type-pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; margin:2px 2px 2px 0; text-transform:capitalize; letter-spacing:.03em; }
+  .stat-row { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+  .stat-bar-bg { background:var(--bg4); border-radius:4px; height:5px; flex:1; min-width:60px; }
+  .stat-fill { height:5px; border-radius:4px; transition:width 0.4s ease; }
   .input-wrap { position: relative; }
-  #guess-input {
-    width: 100%; padding: 11px 14px; font-size: 14px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    color: var(--text);
-    font-family: var(--font-body);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-  }
-  #guess-input:focus {
-    border-color: var(--yellow);
-    box-shadow: 0 0 0 2px #FFCB0522;
-  }
-  #guess-input::placeholder { color: var(--text3); }
-
-  #ac-list {
-    background: var(--bg2); border: 1px solid var(--border-light);
-    border-radius: var(--radius); margin-top: 3px;
-    display: none; max-height: 160px; overflow-y: auto;
-    position: absolute; width: 100%; z-index: 10;
-    box-shadow: 0 8px 24px #00000066;
-  }
-  .ac-item {
-    padding: 8px 14px; font-size: 13px; cursor: pointer;
-    color: var(--text); font-family: var(--font-body);
-    border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
-  }
-  .ac-item:last-child { border-bottom: none; }
-  .ac-item:hover { background: var(--bg3); }
-
-  .guess-actions {
-    display: grid; grid-template-columns: 1fr auto;
-    gap: 6px; margin-top: 7px;
-  }
-
-  .btn-submit {
-    padding: 10px 16px; font-size: 12px; cursor: pointer;
-    border-radius: var(--radius);
-    border: 1px solid var(--yellow);
-    background: linear-gradient(135deg, #2a2000, #1a1500);
-    color: var(--yellow);
-    font-family: var(--font-pixel);
-    letter-spacing: .05em;
-    transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .btn-submit:hover { background: linear-gradient(135deg, #3a3000, #2a2000); box-shadow: 0 0 12px #FFCB0533; }
-  .btn-submit:active { transform: scale(0.97); }
-
-  .btn-giveup {
-    padding: 10px 16px; font-size: 11px; cursor: pointer;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    color: var(--text3);
-    font-family: var(--font-body);
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-  }
-  .btn-giveup:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
-
-  #guess-feedback {
-    margin-top: 7px; font-size: 12px; min-height: 18px;
-    text-align: center; font-family: var(--font-pixel);
-    letter-spacing: .04em; line-height: 1.8;
-  }
-
-  /* Result */
-  #result-area { display: none; margin-top: 18px; }
-  #result-banner {
-    border-radius: var(--radius-lg);
-    padding: 24px 20px;
-    text-align: center;
-    border: 1px solid var(--border);
-    position: relative; overflow: hidden;
-  }
-  #result-banner.won {
-    background: var(--success-bg);
-    border-color: var(--success);
-    box-shadow: 0 0 30px #2ecc7133;
-  }
-  #result-banner.lost {
-    background: var(--danger-bg);
-    border-color: var(--danger);
-    box-shadow: 0 0 30px #e74c3c33;
-  }
-  #pksprite {
-    width: 120px; height: 120px;
-    image-rendering: pixelated;
-    display: block; margin: 0 auto 10px;
-    filter: drop-shadow(0 0 12px #ffffff44);
-    animation: floatAnim 3s ease-in-out infinite;
-  }
+  #guess-input { width:100%; padding:11px 14px; font-size:14px; border-radius:var(--radius); border:1px solid var(--border); background:var(--bg2); color:var(--text); font-family:var(--font-body); transition:border-color 0.2s, box-shadow 0.2s; outline:none; }
+  #guess-input:focus { border-color:var(--yellow); box-shadow:0 0 0 2px #FFCB0522; }
+  #guess-input::placeholder { color:var(--text3); }
+  #ac-list { background:var(--bg2); border:1px solid var(--border-light); border-radius:var(--radius); margin-top:3px; display:none; max-height:160px; overflow-y:auto; position:absolute; width:100%; z-index:10; box-shadow:0 8px 24px #00000066; }
+  .ac-item { padding:8px 14px; font-size:13px; cursor:pointer; color:var(--text); font-family:var(--font-body); border-bottom:1px solid var(--border); transition:background 0.1s; }
+  .ac-item:last-child { border-bottom:none; }
+  .ac-item:hover { background:var(--bg3); }
+  .guess-actions { display:grid; grid-template-columns:1fr auto; gap:6px; margin-top:7px; }
+  .btn-submit { padding:10px 16px; font-size:12px; cursor:pointer; border-radius:var(--radius); border:1px solid var(--yellow); background:linear-gradient(135deg,#2a2000,#1a1500); color:var(--yellow); font-family:var(--font-pixel); letter-spacing:.05em; transition:background 0.15s, box-shadow 0.15s, transform 0.1s; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .btn-submit:hover { background:linear-gradient(135deg,#3a3000,#2a2000); box-shadow:0 0 12px #FFCB0533; }
+  .btn-submit:active { transform:scale(0.97); }
+  .btn-giveup { padding:10px 16px; font-size:11px; cursor:pointer; border-radius:var(--radius); border:1px solid var(--border); background:var(--bg2); color:var(--text3); font-family:var(--font-body); transition:background 0.15s, border-color 0.15s, color 0.15s; }
+  .btn-giveup:hover { border-color:var(--danger); color:var(--danger); background:var(--danger-bg); }
+  #guess-feedback { margin-top:7px; font-size:12px; min-height:18px; text-align:center; font-family:var(--font-pixel); letter-spacing:.04em; line-height:1.8; }
+  #result-area { display:none; margin-top:18px; }
+  #result-banner { border-radius:var(--radius-lg); padding:24px 20px; text-align:center; border:1px solid var(--border); position:relative; overflow:hidden; }
+  #result-banner.won { background:var(--success-bg); border-color:var(--success); box-shadow:0 0 30px #2ecc7133; }
+  #result-banner.lost { background:var(--danger-bg); border-color:var(--danger); box-shadow:0 0 30px #e74c3c33; }
+  #pksprite { width:120px; height:120px; image-rendering:pixelated; display:block; margin:0 auto 10px; filter:drop-shadow(0 0 12px #ffffff44); animation:floatAnim 3s ease-in-out infinite; }
   @keyframes floatAnim { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  #result-name {
-    font-family: var(--font-pixel); font-size: 14px;
-    color: var(--text); margin-bottom: 6px; line-height: 1.6;
-  }
-  #result-score { font-size: 12px; color: var(--text2); margin-bottom: 16px; line-height: 1.6; }
-
-  .btn-new {
-    padding: 11px 22px; font-size: 10px; cursor: pointer;
-    border-radius: var(--radius);
-    border: 1px solid var(--yellow);
-    background: linear-gradient(135deg, #2a2000, #1a1500);
-    color: var(--yellow);
-    font-family: var(--font-pixel);
-    letter-spacing: .06em;
-    transition: background 0.15s, box-shadow 0.15s;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  .btn-new:hover { background: linear-gradient(135deg, #3a3000, #2a2000); box-shadow: 0 0 16px #FFCB0544; }
-
-  .play-cry-btn {
-    padding: 6px 14px; font-size: 11px; cursor: pointer;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-light);
-    background: var(--bg3); color: var(--text);
-    font-family: var(--font-body);
-    transition: background 0.15s;
-  }
-  .play-cry-btn:hover { background: var(--bg4); }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
+  #result-name { font-family:var(--font-pixel); font-size:14px; color:var(--text); margin-bottom:6px; line-height:1.6; }
+  #result-score { font-size:12px; color:var(--text2); margin-bottom:16px; line-height:1.6; }
+  .btn-new { padding:11px 22px; font-size:10px; cursor:pointer; border-radius:var(--radius); border:1px solid var(--yellow); background:linear-gradient(135deg,#2a2000,#1a1500); color:var(--yellow); font-family:var(--font-pixel); letter-spacing:.06em; transition:background 0.15s, box-shadow 0.15s; display:inline-flex; align-items:center; gap:8px; }
+  .btn-new:hover { background:linear-gradient(135deg,#3a3000,#2a2000); box-shadow:0 0 16px #FFCB0544; }
+  .play-cry-btn { padding:6px 14px; font-size:11px; cursor:pointer; border-radius:var(--radius); border:1px solid var(--border-light); background:var(--bg3); color:var(--text); font-family:var(--font-body); transition:background 0.15s; }
+  .play-cry-btn:hover { background:var(--bg4); }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:10px; }
 </style>
 </head>
 <body>
-
 <header class="game-header">
-  <div class="header-logo">
-    WHO'S THAT<br><span>POKÉMON?</span>
-  </div>
-  <div class="header-dots">
-    <div class="header-dot"></div>
-    <div class="header-dot"></div>
-    <div class="header-dot"></div>
+  <div class="header-logo" id="header-logo">WHO'S THAT<br><span>POKÉMON?</span></div>
+  <div class="header-right">
+    <div class="lang-select-wrap">
+      <button class="lang-btn" onclick="toggleLangDropdown()">
+        <span id="lang-btn-flag">🇬🇧</span>
+        <span id="lang-btn-label">EN</span>
+        <span class="lang-arrow">▾</span>
+      </button>
+      <div class="lang-dropdown" id="lang-dropdown">
+        <div class="lang-option active" data-lang="en"      data-flag="🇬🇧" data-label="EN" onclick="selectLang(this)"><span>🇬🇧</span><span>EN</span><span class="lang-native">English</span></div>
+        <div class="lang-option"        data-lang="es"      data-flag="🇪🇸" data-label="ES" onclick="selectLang(this)"><span>🇪🇸</span><span>ES</span><span class="lang-native">Español</span></div>
+        <div class="lang-option"        data-lang="fr"      data-flag="🇫🇷" data-label="FR" onclick="selectLang(this)"><span>🇫🇷</span><span>FR</span><span class="lang-native">Français</span></div>
+        <div class="lang-option"        data-lang="de"      data-flag="🇩🇪" data-label="DE" onclick="selectLang(this)"><span>🇩🇪</span><span>DE</span><span class="lang-native">Deutsch</span></div>
+        <div class="lang-option"        data-lang="it"      data-flag="🇮🇹" data-label="IT" onclick="selectLang(this)"><span>🇮🇹</span><span>IT</span><span class="lang-native">Italiano</span></div>
+        <div class="lang-option"        data-lang="ja"      data-flag="🇯🇵" data-label="JA" onclick="selectLang(this)"><span>🇯🇵</span><span>JA</span><span class="lang-native">日本語</span></div>
+        <div class="lang-option"        data-lang="ko"      data-flag="🇰🇷" data-label="KO" onclick="selectLang(this)"><span>🇰🇷</span><span>KO</span><span class="lang-native">한국어</span></div>
+        <div class="lang-option"        data-lang="zh-Hans" data-flag="🇨🇳" data-label="ZH" onclick="selectLang(this)"><span>🇨🇳</span><span>ZH</span><span class="lang-native">中文</span></div>
+      </div>
+    </div>
+    <div class="header-dots">
+      <div class="header-dot"></div><div class="header-dot"></div><div class="header-dot"></div>
+    </div>
   </div>
 </header>
 
 <div class="game-wrap">
-
   <div id="loading">
     <div class="load-pokeball"></div>
-    <div id="load-msg">Fetching full Pokédex...</div>
+    <div id="load-msg"></div>
     <div id="load-sub"></div>
   </div>
-
   <div id="game" style="display:none;">
     <div class="score-bar">
-      <div class="score-card">
-        <div class="slabel">Points used</div>
-        <div class="sval red" id="pts">0</div>
-      </div>
-      <div class="score-card">
-        <div class="slabel">Hints taken</div>
-        <div class="sval yellow" id="hcount">0</div>
-      </div>
-      <div class="score-card">
-        <div class="slabel">Wrong guesses</div>
-        <div class="sval blue" id="wrongs">0</div>
-      </div>
+      <div class="score-card"><div class="slabel" id="lbl-pts"></div><div class="sval red" id="pts">0</div></div>
+      <div class="score-card"><div class="slabel" id="lbl-hints"></div><div class="sval yellow" id="hcount">0</div></div>
+      <div class="score-card"><div class="slabel" id="lbl-wrong"></div><div class="sval blue" id="wrongs">0</div></div>
     </div>
-
     <div id="revealed-list"></div>
-
-    <div class="section-label">Hints — click to reveal</div>
+    <div class="section-label" id="lbl-hints-section"></div>
     <div id="btn-grid"></div>
-
-    <div class="section-label" style="margin-top:20px;">Your guess</div>
+    <div class="section-label" id="lbl-guess-section" style="margin-top:20px;"></div>
     <div class="input-wrap">
-      <input type="text" id="guess-input" placeholder="Type a Pokémon name..." autocomplete="off"/>
+      <input type="text" id="guess-input" autocomplete="off"/>
       <div id="ac-list"></div>
     </div>
     <div class="guess-actions">
-      <button class="btn-submit" onclick="submitGuess()">⚡ Submit Guess</button>
-      <button class="btn-giveup" onclick="giveUp()">Give up</button>
+      <button class="btn-submit" id="btn-submit" onclick="submitGuess()"></button>
+      <button class="btn-giveup" id="btn-giveup" onclick="giveUp()"></button>
     </div>
     <div id="guess-feedback"></div>
-
     <div id="result-area">
       <div id="result-banner">
         <img id="pksprite" src="" alt=""/>
         <div id="result-name"></div>
         <div id="result-score"></div>
-        <button class="btn-new" onclick="newGame()">▶ New Pokémon</button>
+        <button class="btn-new" id="btn-new" onclick="newGame()"></button>
       </div>
     </div>
   </div>
-
 </div>
 
 <script>
+// ─── i18n ─────────────────────────────────────────────────────────────────────
+const I18N = {
+  en: {
+    header_line1:'WHOS THAT',header_line2:'POKÉMON?',
+    load_dex:'Fetching full Pokédex...',load_random:'Loading a random Pokémon...',load_error:'Error — retrying...',
+    pts_label:'Points used',hints_label:'Hints taken',wrong_label:'Wrong guesses',
+    hints_section:'Hints — click to reveal',guess_section:'Your guess',
+    input_ph:'Type a Pokémon name...',
+    submit_btn:'⚡ Submit Guess',giveup_btn:'Give up',new_btn:'▶ New Pokémon',
+    wrong_fb:'✗ Not quite! Try again.',giveup_result:'(you gave up)',better_luck:'Better luck next time!',
+    score_line:(s,h,w,t,r)=>`Score: ${s} · ${h} hints · ${w} wrong · ${t}s · ${r}`,
+    rank_master:'🏆 Master Trainer',rank_elite:'🔥 Elite Four',rank_gym:'⚡ Gym Leader',rank_trainer:'👍 Trainer',rank_beginner:'🌱 Beginner',
+    no_weakness:'No weaknesses',no_resist:'No resistances or immunities',
+    genderless:'Genderless',legendary:'Legendary',mythical:'Mythical',regular:'Regular Pokémon',
+    base_form:'Base form — does not evolve from anything',final_form:'Final form — does not evolve further',standalone:'— standalone',
+    stage_labels:['','Basic','Stage 1','Stage 2','Stage 3'],evo_special:'Special condition',
+    level_up:'Level up',lv:'Level',use_item:'Use',trade:'Trade',trade_holding:'holding',
+    high_friend:'High friendship',during:'During',knowing:'Knowing',at_loc:'At',holding:'Holding',
+    high_beauty:'High beauty',in_rain:'In rain',upside_down:'Turn console upside down',female:'Female',male:'Male',
+    no_habitat:'Not recorded in Pokédex',
+    play_cry:'🔊 Play cry',playing_cry:'Playing...',no_cry:'No cry available',play_again:'▶ Play again',
+    evo_chain:n=>`${n} evolution(s) in chain`,none:'None',unknown:'Unknown',not_found:'No entry found.',
+    h_dex_number:'Pokédex number',h_type:'Type(s)',h_evolution_stage:'Evolution stage',
+    h_weaknesses:'Type weaknesses',h_resistances:'Type resistances',h_scrambled:'Scrambled name',
+    h_generation:'Generation',h_color:'Pokédex color',h_shape:'Body shape',
+    h_evo_method_to:'Evolution method (into this)',h_evo_method_from:'Evolution method (from this)',
+    h_stats:'Full stat spread',h_abilities:'Abilities',h_region:'Region',h_habitat:'Habitat',
+    h_first_letter:'First letter',h_evo_count:'Evolution count',h_bst:'Base stat total',
+    h_legendary:'Legendary status',h_egg_group:'Egg group(s)',h_height_weight:'Height & weight',
+    h_catch_rate:'Catch rate',h_base_friendship:'Base friendship',h_growth_rate:'Growth rate',
+    h_gender_ratio:'Gender ratio',h_base_exp:'Base experience',h_ev_yield:'EV yield',
+    h_genus:'Species',h_cry:'Cry (audio)',h_flavor:'Pokédex entry',h_silhouette:'Silhouette',
+  },
+  es: {
+    header_line1:'¿QUIÉN ES',header_line2:'ESE POKÉMON?',
+    load_dex:'Cargando la Pokédex completa...',load_random:'Cargando un Pokémon aleatorio...',load_error:'Error — reintentando...',
+    pts_label:'Puntos usados',hints_label:'Pistas usadas',wrong_label:'Errores',
+    hints_section:'Pistas — haz clic para revelar',guess_section:'Tu respuesta',
+    input_ph:'Escribe el nombre del Pokémon...',
+    submit_btn:'⚡ Enviar respuesta',giveup_btn:'Rendirse',new_btn:'▶ Nuevo Pokémon',
+    wrong_fb:'✗ ¡Incorrecto! Inténtalo de nuevo.',giveup_result:'(te has rendido)',better_luck:'¡Mejor suerte la próxima vez!',
+    score_line:(s,h,w,t,r)=>`Puntuación: ${s} · ${h} pistas · ${w} errores · ${t}s · ${r}`,
+    rank_master:'🏆 Maestro Pokémon',rank_elite:'🔥 Alto Mando',rank_gym:'⚡ Líder de Gimnasio',rank_trainer:'👍 Entrenador',rank_beginner:'🌱 Principiante',
+    no_weakness:'Sin debilidades',no_resist:'Sin resistencias ni inmunidades',
+    genderless:'Sin género',legendary:'Legendario',mythical:'Mítico',regular:'Pokémon normal',
+    base_form:'Forma base — no evoluciona de ninguno',final_form:'Forma final — no evoluciona más',standalone:'— no evoluciona',
+    stage_labels:['','Base','Fase 1','Fase 2','Fase 3'],evo_special:'Condición especial',
+    level_up:'Subir de nivel',lv:'Nivel',use_item:'Usar',trade:'Intercambio',trade_holding:'portando',
+    high_friend:'Alta amistad',during:'Durante',knowing:'Sabiendo',at_loc:'En',holding:'Portando',
+    high_beauty:'Alta belleza',in_rain:'Con lluvia',upside_down:'Girar la consola boca abajo',female:'Hembra',male:'Macho',
+    no_habitat:'No registrado en la Pokédex',
+    play_cry:'🔊 Escuchar grito',playing_cry:'Reproduciendo...',no_cry:'Grito no disponible',play_again:'▶ Volver a escuchar',
+    evo_chain:n=>`${n} evolución/es en la cadena`,none:'Ninguno',unknown:'Desconocido',not_found:'Entrada no encontrada.',
+    h_dex_number:'Número de Pokédex',h_type:'Tipo(s)',h_evolution_stage:'Fase de evolución',
+    h_weaknesses:'Debilidades de tipo',h_resistances:'Resistencias de tipo',h_scrambled:'Nombre revuelto',
+    h_generation:'Generación',h_color:'Color Pokédex',h_shape:'Forma corporal',
+    h_evo_method_to:'Método de evolución (hacia este)',h_evo_method_from:'Método de evolución (desde este)',
+    h_stats:'Estadísticas completas',h_abilities:'Habilidades',h_region:'Región',h_habitat:'Hábitat',
+    h_first_letter:'Primera letra',h_evo_count:'Número de evoluciones',h_bst:'Total de estadísticas base',
+    h_legendary:'Estado legendario',h_egg_group:'Grupo huevo',h_height_weight:'Altura y peso',
+    h_catch_rate:'Tasa de captura',h_base_friendship:'Amistad base',h_growth_rate:'Tasa de crecimiento',
+    h_gender_ratio:'Ratio de género',h_base_exp:'Experiencia base',h_ev_yield:'EV obtenidos',
+    h_genus:'Especie',h_cry:'Grito (audio)',h_flavor:'Entrada Pokédex',h_silhouette:'Silueta',
+  },
+  fr: {
+    header_line1:"C'EST QUI CE",header_line2:'POKÉMON ?',
+    load_dex:'Chargement du Pokédex...',load_random:"Chargement d'un Pokémon aléatoire...",load_error:'Erreur — nouvelle tentative...',
+    pts_label:'Points utilisés',hints_label:'Indices utilisés',wrong_label:'Mauvaises réponses',
+    hints_section:'Indices — cliquez pour révéler',guess_section:'Votre réponse',
+    input_ph:'Tapez le nom du Pokémon...',
+    submit_btn:'⚡ Envoyer la réponse',giveup_btn:'Abandonner',new_btn:'▶ Nouveau Pokémon',
+    wrong_fb:'✗ Pas tout à fait ! Réessayez.',giveup_result:'(vous avez abandonné)',better_luck:'Meilleure chance la prochaine fois !',
+    score_line:(s,h,w,t,r)=>`Score: ${s} · ${h} indices · ${w} erreurs · ${t}s · ${r}`,
+    rank_master:'🏆 Maître Pokémon',rank_elite:'🔥 Élite Four',rank_gym:"⚡ Champion d'Arène",rank_trainer:'👍 Dresseur',rank_beginner:'🌱 Débutant',
+    no_weakness:'Aucune faiblesse',no_resist:'Aucune résistance ou immunité',
+    genderless:'Sans genre',legendary:'Légendaire',mythical:'Mythique',regular:'Pokémon ordinaire',
+    base_form:"Forme de base — n'évolue depuis rien",final_form:"Forme finale — n'évolue plus",standalone:'— sans évolution',
+    stage_labels:['','Base','Stade 1','Stade 2','Stade 3'],evo_special:'Condition spéciale',
+    level_up:'Montée de niveau',lv:'Niveau',use_item:'Utiliser',trade:'Échange',trade_holding:'tenant',
+    high_friend:'Haute amitié',during:'Pendant',knowing:'Connaissant',at_loc:'À',holding:'Tenant',
+    high_beauty:'Haute beauté',in_rain:'Sous la pluie',upside_down:'Retourner la console',female:'Femelle',male:'Mâle',
+    no_habitat:'Non répertorié dans le Pokédex',
+    play_cry:'🔊 Écouter le cri',playing_cry:'Lecture...',no_cry:'Cri indisponible',play_again:'▶ Réécouter',
+    evo_chain:n=>`${n} évolution(s) dans la chaîne`,none:'Aucun',unknown:'Inconnu',not_found:'Entrée introuvable.',
+    h_dex_number:'Numéro Pokédex',h_type:'Type(s)',h_evolution_stage:"Stade d'évolution",
+    h_weaknesses:'Faiblesses de type',h_resistances:'Résistances de type',h_scrambled:'Nom mélangé',
+    h_generation:'Génération',h_color:'Couleur Pokédex',h_shape:'Forme corporelle',
+    h_evo_method_to:"Méthode d'évolution (vers ce Pokémon)",h_evo_method_from:"Méthode d'évolution (depuis ce Pokémon)",
+    h_stats:'Statistiques complètes',h_abilities:'Talents',h_region:'Région',h_habitat:'Habitat',
+    h_first_letter:'Première lettre',h_evo_count:"Nombre d'évolutions",h_bst:'Total des stats de base',
+    h_legendary:'Statut légendaire',h_egg_group:'Groupe Œuf',h_height_weight:'Taille et poids',
+    h_catch_rate:'Taux de capture',h_base_friendship:'Amitié de base',h_growth_rate:'Taux de croissance',
+    h_gender_ratio:'Ratio de genre',h_base_exp:'Expérience de base',h_ev_yield:'EV gagnés',
+    h_genus:'Espèce',h_cry:'Cri (audio)',h_flavor:'Entrée Pokédex',h_silhouette:'Silhouette',
+  },
+  de: {
+    header_line1:'WER IST DIESES',header_line2:'POKÉMON?',
+    load_dex:'Lade vollständigen Pokédex...',load_random:'Lade ein zufälliges Pokémon...',load_error:'Fehler — neuer Versuch...',
+    pts_label:'Punkte verbraucht',hints_label:'Hinweise genutzt',wrong_label:'Falsche Antworten',
+    hints_section:'Hinweise — klicken zum Aufdecken',guess_section:'Deine Antwort',
+    input_ph:'Pokémon-Namen eingeben...',
+    submit_btn:'⚡ Antwort senden',giveup_btn:'Aufgeben',new_btn:'▶ Neues Pokémon',
+    wrong_fb:'✗ Nicht ganz! Versuche es erneut.',giveup_result:'(du hast aufgegeben)',better_luck:'Beim nächsten Mal mehr Glück!',
+    score_line:(s,h,w,t,r)=>`Punkte: ${s} · ${h} Hinweise · ${w} falsch · ${t}s · ${r}`,
+    rank_master:'🏆 Pokémon-Meister',rank_elite:'🔥 Top Vier',rank_gym:'⚡ Arenaleiter',rank_trainer:'👍 Trainer',rank_beginner:'🌱 Anfänger',
+    no_weakness:'Keine Schwächen',no_resist:'Keine Resistenzen oder Immunitäten',
+    genderless:'Geschlechtslos',legendary:'Legendär',mythical:'Mysteriös',regular:'Normales Pokémon',
+    base_form:'Basisform — entwickelt sich von nichts',final_form:'Endform — entwickelt sich nicht weiter',standalone:'— keine Entwicklung',
+    stage_labels:['','Basis','Stufe 1','Stufe 2','Stufe 3'],evo_special:'Besondere Bedingung',
+    level_up:'Level-Up',lv:'Level',use_item:'Benutze',trade:'Tausch',trade_holding:'hält',
+    high_friend:'Hohe Freundschaft',during:'Während',knowing:'Kennt',at_loc:'Bei',holding:'Hält',
+    high_beauty:'Hohe Schönheit',in_rain:'Im Regen',upside_down:'Konsole umdrehen',female:'Weiblich',male:'Männlich',
+    no_habitat:'Nicht im Pokédex verzeichnet',
+    play_cry:'🔊 Schrei abspielen',playing_cry:'Wird abgespielt...',no_cry:'Kein Schrei verfügbar',play_again:'▶ Nochmals abspielen',
+    evo_chain:n=>`${n} Entwicklung(en) in der Kette`,none:'Keine',unknown:'Unbekannt',not_found:'Kein Eintrag gefunden.',
+    h_dex_number:'Pokédex-Nummer',h_type:'Typ(en)',h_evolution_stage:'Entwicklungsstufe',
+    h_weaknesses:'Typ-Schwächen',h_resistances:'Typ-Resistenzen',h_scrambled:'Name durchgemischt',
+    h_generation:'Generation',h_color:'Pokédex-Farbe',h_shape:'Körperform',
+    h_evo_method_to:'Entwicklungsmethode (zu diesem)',h_evo_method_from:'Entwicklungsmethode (von diesem)',
+    h_stats:'Vollständige Statuswerte',h_abilities:'Fähigkeiten',h_region:'Region',h_habitat:'Habitat',
+    h_first_letter:'Erster Buchstabe',h_evo_count:'Anzahl der Entwicklungen',h_bst:'Summe der Basiswerte',
+    h_legendary:'Legendärer Status',h_egg_group:'Ei-Gruppe(n)',h_height_weight:'Größe und Gewicht',
+    h_catch_rate:'Fangrate',h_base_friendship:'Basis-Freundschaft',h_growth_rate:'Wachstumsrate',
+    h_gender_ratio:'Geschlechterverhältnis',h_base_exp:'Basis-Erfahrung',h_ev_yield:'EW-Ausbeute',
+    h_genus:'Spezies',h_cry:'Schrei (Audio)',h_flavor:'Pokédex-Eintrag',h_silhouette:'Silhouette',
+  },
+  it: {
+    header_line1:'CHI È QUEL',header_line2:'POKÉMON?',
+    load_dex:'Caricamento del Pokédex completo...',load_random:'Caricamento di un Pokémon casuale...',load_error:'Errore — nuovo tentativo...',
+    pts_label:'Punti usati',hints_label:'Suggerimenti',wrong_label:'Errori',
+    hints_section:'Suggerimenti — clicca per rivelare',guess_section:'La tua risposta',
+    input_ph:'Scrivi il nome del Pokémon...',
+    submit_btn:'⚡ Invia risposta',giveup_btn:'Arrendersi',new_btn:'▶ Nuovo Pokémon',
+    wrong_fb:'✗ Non esatto! Riprova.',giveup_result:'(ti sei arreso)',better_luck:'Meglio fortuna la prossima volta!',
+    score_line:(s,h,w,t,r)=>`Punteggio: ${s} · ${h} suggerimenti · ${w} errori · ${t}s · ${r}`,
+    rank_master:'🏆 Maestro Pokémon',rank_elite:'🔥 Elite Quattro',rank_gym:'⚡ Capopalestra',rank_trainer:'👍 Allenatore',rank_beginner:'🌱 Principiante',
+    no_weakness:'Nessuna debolezza',no_resist:'Nessuna resistenza o immunità',
+    genderless:'Senza genere',legendary:'Leggendario',mythical:'Mitico',regular:'Pokémon normale',
+    base_form:'Forma base — non si evolve da niente',final_form:'Forma finale — non si evolve ulteriormente',standalone:'— nessuna evoluzione',
+    stage_labels:['','Base','Stadio 1','Stadio 2','Stadio 3'],evo_special:'Condizione speciale',
+    level_up:'Aumento di livello',lv:'Livello',use_item:'Usa',trade:'Scambio',trade_holding:'tenendo',
+    high_friend:'Alta amicizia',during:'Durante',knowing:'Conoscendo',at_loc:'A',holding:'Tenendo',
+    high_beauty:'Alta bellezza',in_rain:'Sotto la pioggia',upside_down:'Girare la console a testa in giù',female:'Femmina',male:'Maschio',
+    no_habitat:'Non registrato nel Pokédex',
+    play_cry:'🔊 Ascolta il grido',playing_cry:'In riproduzione...',no_cry:'Grido non disponibile',play_again:'▶ Ascolta ancora',
+    evo_chain:n=>`${n} evoluzione/i nella catena`,none:'Nessuno',unknown:'Sconosciuto',not_found:'Nessuna voce trovata.',
+    h_dex_number:'Numero Pokédex',h_type:'Tipo/i',h_evolution_stage:'Stadio evolutivo',
+    h_weaknesses:'Debolezze di tipo',h_resistances:'Resistenze di tipo',h_scrambled:'Nome mescolato',
+    h_generation:'Generazione',h_color:'Colore Pokédex',h_shape:'Forma corporea',
+    h_evo_method_to:'Metodo di evoluzione (verso questo)',h_evo_method_from:'Metodo di evoluzione (da questo)',
+    h_stats:'Statistiche complete',h_abilities:'Abilità',h_region:'Regione',h_habitat:'Habitat',
+    h_first_letter:'Prima lettera',h_evo_count:'Numero di evoluzioni',h_bst:'Totale statistiche base',
+    h_legendary:'Stato leggendario',h_egg_group:'Gruppo Uovo',h_height_weight:'Altezza e peso',
+    h_catch_rate:'Tasso di cattura',h_base_friendship:'Amicizia base',h_growth_rate:'Tasso di crescita',
+    h_gender_ratio:'Rapporto di genere',h_base_exp:'Esperienza base',h_ev_yield:'EV guadagnati',
+    h_genus:'Specie',h_cry:'Grido (audio)',h_flavor:'Voce Pokédex',h_silhouette:'Silhouette',
+  },
+  ja: {
+    header_line1:'このポケモン',header_line2:'だ～れだ？',
+    load_dex:'ポケモン図鑑を読み込み中...',load_random:'ランダムなポケモンを読み込み中...',load_error:'エラー — 再試行中...',
+    pts_label:'使用ポイント',hints_label:'ヒント数',wrong_label:'不正解数',
+    hints_section:'ヒント — クリックして表示',guess_section:'回答',
+    input_ph:'ポケモンの名前を入力...',
+    submit_btn:'⚡ 回答する',giveup_btn:'あきらめる',new_btn:'▶ 次のポケモン',
+    wrong_fb:'✗ ちがいます！もう一度。',giveup_result:'（あきらめました）',better_luck:'次は頑張ろう！',
+    score_line:(s,h,w,t,r)=>`スコア: ${s} · ヒント${h}回 · 不正解${w}回 · ${t}秒 · ${r}`,
+    rank_master:'🏆 ポケモンマスター',rank_elite:'🔥 四天王',rank_gym:'⚡ ジムリーダー',rank_trainer:'👍 トレーナー',rank_beginner:'🌱 ビギナー',
+    no_weakness:'弱点なし',no_resist:'耐性・無効なし',
+    genderless:'性別なし',legendary:'伝説',mythical:'幻',regular:'通常ポケモン',
+    base_form:'基本形態 — 何からも進化しない',final_form:'最終形態 — これ以上進化しない',standalone:'— 進化なし',
+    stage_labels:['','基本','段階1','段階2','段階3'],evo_special:'特殊条件',
+    level_up:'レベルアップ',lv:'レベル',use_item:'使う',trade:'通信交換',trade_holding:'を持たせて',
+    high_friend:'高なつき度',during:'の時間帯に',knowing:'を覚えた状態で',at_loc:'で',holding:'を持たせて',
+    high_beauty:'高い美しさ',in_rain:'雨の中で',upside_down:'本体を逆さにする',female:'メス',male:'オス',
+    no_habitat:'図鑑に記録なし',
+    play_cry:'🔊 鳴き声を聴く',playing_cry:'再生中...',no_cry:'鳴き声なし',play_again:'▶ もう一度',
+    evo_chain:n=>`進化系統に${n}段階`,none:'なし',unknown:'不明',not_found:'図鑑の説明が見つかりません。',
+    h_dex_number:'図鑑番号',h_type:'タイプ',h_evolution_stage:'進化段階',
+    h_weaknesses:'タイプ弱点',h_resistances:'タイプ耐性',h_scrambled:'バラバラの名前',
+    h_generation:'世代',h_color:'図鑑の色',h_shape:'からだの形',
+    h_evo_method_to:'進化方法（このポケモンへ）',h_evo_method_from:'進化方法（このポケモンから）',
+    h_stats:'全能力値',h_abilities:'とくせい',h_region:'地方',h_habitat:'生息地',
+    h_first_letter:'名前の最初の文字',h_evo_count:'進化数',h_bst:'種族値合計',
+    h_legendary:'伝説・幻',h_egg_group:'タマゴグループ',h_height_weight:'高さ・重さ',
+    h_catch_rate:'捕獲率',h_base_friendship:'なつき度',h_growth_rate:'成長速度',
+    h_gender_ratio:'性別比率',h_base_exp:'基本経験値',h_ev_yield:'努力値',
+    h_genus:'ポケモンの分類',h_cry:'鳴き声（音声）',h_flavor:'図鑑の説明',h_silhouette:'シルエット',
+  },
+  ko: {
+    header_line1:'이 포케몬은',header_line2:'누구일까요?',
+    load_dex:'포켓몬 도감 불러오는 중...',load_random:'랜덤 포켓몬 불러오는 중...',load_error:'오류 — 재시도 중...',
+    pts_label:'사용 포인트',hints_label:'힌트 수',wrong_label:'오답 수',
+    hints_section:'힌트 — 클릭하여 공개',guess_section:'정답 입력',
+    input_ph:'포켓몬 이름을 입력하세요...',
+    submit_btn:'⚡ 정답 제출',giveup_btn:'포기하기',new_btn:'▶ 새 포켓몬',
+    wrong_fb:'✗ 틀렸습니다! 다시 시도하세요.',giveup_result:'(포기했습니다)',better_luck:'다음에는 더 잘할 수 있을 거예요!',
+    score_line:(s,h,w,t,r)=>`점수: ${s} · 힌트 ${h}회 · 오답 ${w}회 · ${t}초 · ${r}`,
+    rank_master:'🏆 포켓몬 마스터',rank_elite:'🔥 사천왕',rank_gym:'⚡ 체육관 관장',rank_trainer:'👍 트레이너',rank_beginner:'🌱 초보자',
+    no_weakness:'약점 없음',no_resist:'저항 및 무효 없음',
+    genderless:'무성',legendary:'전설',mythical:'환상',regular:'일반 포켓몬',
+    base_form:'기본 형태 — 진화 전 없음',final_form:'최종 형태 — 더 이상 진화 없음',standalone:'— 진화 없음',
+    stage_labels:['','기본','단계 1','단계 2','단계 3'],evo_special:'특수 조건',
+    level_up:'레벨 업',lv:'레벨',use_item:'사용',trade:'통신 교환',trade_holding:'지참',
+    high_friend:'높은 친밀도',during:'때',knowing:'기술 습득',at_loc:'에서',holding:'지참',
+    high_beauty:'높은 아름다움',in_rain:'비 속에서',upside_down:'본체를 뒤집기',female:'암컷',male:'수컷',
+    no_habitat:'도감에 기록 없음',
+    play_cry:'🔊 울음소리 듣기',playing_cry:'재생 중...',no_cry:'울음소리 없음',play_again:'▶ 다시 듣기',
+    evo_chain:n=>`진화 계통에 ${n}단계`,none:'없음',unknown:'불명',not_found:'도감 설명을 찾을 수 없습니다.',
+    h_dex_number:'도감 번호',h_type:'타입',h_evolution_stage:'진화 단계',
+    h_weaknesses:'타입 약점',h_resistances:'타입 저항',h_scrambled:'뒤섞인 이름',
+    h_generation:'세대',h_color:'도감 색상',h_shape:'몸 형태',
+    h_evo_method_to:'진화 방법 (이 포켓몬으로)',h_evo_method_from:'진화 방법 (이 포켓몬에서)',
+    h_stats:'전체 종족값',h_abilities:'특성',h_region:'지방',h_habitat:'서식지',
+    h_first_letter:'이름의 첫 글자',h_evo_count:'진화 수',h_bst:'종족값 합계',
+    h_legendary:'전설/환상 여부',h_egg_group:'알 그룹',h_height_weight:'키와 몸무게',
+    h_catch_rate:'포획률',h_base_friendship:'기본 친밀도',h_growth_rate:'성장 속도',
+    h_gender_ratio:'성비',h_base_exp:'기본 경험치',h_ev_yield:'노력치',
+    h_genus:'포켓몬 분류',h_cry:'울음소리 (음성)',h_flavor:'도감 설명',h_silhouette:'실루엣',
+  },
+  'zh-Hans': {
+    header_line1:'这是哪只',header_line2:'宝可梦？',
+    load_dex:'正在加载完整图鉴...',load_random:'正在加载随机宝可梦...',load_error:'出错 — 正在重试...',
+    pts_label:'已用积分',hints_label:'已用提示',wrong_label:'错误次数',
+    hints_section:'提示 — 点击查看',guess_section:'你的回答',
+    input_ph:'输入宝可梦的名字...',
+    submit_btn:'⚡ 提交答案',giveup_btn:'放弃',new_btn:'▶ 新宝可梦',
+    wrong_fb:'✗ 不对！再试一次。',giveup_result:'（你放弃了）',better_luck:'下次加油！',
+    score_line:(s,h,w,t,r)=>`得分: ${s} · ${h}个提示 · ${w}次错误 · ${t}秒 · ${r}`,
+    rank_master:'🏆 宝可梦大师',rank_elite:'🔥 四天王',rank_gym:'⚡ 道馆馆主',rank_trainer:'👍 训练师',rank_beginner:'🌱 初学者',
+    no_weakness:'无弱点',no_resist:'无抗性或免疫',
+    genderless:'无性别',legendary:'传说',mythical:'幻之',regular:'普通宝可梦',
+    base_form:'基础形态 — 无前置进化',final_form:'最终形态 — 不再进化',standalone:'— 无进化',
+    stage_labels:['','基础','阶段1','阶段2','阶段3'],evo_special:'特殊条件',
+    level_up:'升级',lv:'等级',use_item:'使用',trade:'交换',trade_holding:'持有',
+    high_friend:'高亲密度',during:'时段',knowing:'学会',at_loc:'在',holding:'持有',
+    high_beauty:'高美丽值',in_rain:'雨天',upside_down:'将主机倒置',female:'雌性',male:'雄性',
+    no_habitat:'图鉴中未记录',
+    play_cry:'🔊 播放叫声',playing_cry:'播放中...',no_cry:'无叫声',play_again:'▶ 再次播放',
+    evo_chain:n=>`进化链共${n}个`,none:'无',unknown:'未知',not_found:'未找到图鉴说明。',
+    h_dex_number:'图鉴编号',h_type:'属性',h_evolution_stage:'进化阶段',
+    h_weaknesses:'属性弱点',h_resistances:'属性抗性',h_scrambled:'打乱的名字',
+    h_generation:'世代',h_color:'图鉴颜色',h_shape:'体型',
+    h_evo_method_to:'进化方式（进化为此）',h_evo_method_from:'进化方式（从此进化）',
+    h_stats:'完整种族值',h_abilities:'特性',h_region:'地区',h_habitat:'栖息地',
+    h_first_letter:'名字首字',h_evo_count:'进化数量',h_bst:'种族值总和',
+    h_legendary:'传说状态',h_egg_group:'蛋群',h_height_weight:'身高与体重',
+    h_catch_rate:'捕获率',h_base_friendship:'基础亲密度',h_growth_rate:'成长速度',
+    h_gender_ratio:'性别比例',h_base_exp:'基础经验值',h_ev_yield:'努力值',
+    h_genus:'种类',h_cry:'叫声（音频）',h_flavor:'图鉴说明',h_silhouette:'剪影',
+  },
+};
+
+function t(key,...args){
+  const d=I18N[currentLang]||I18N.en;
+  const v=d[key]!==undefined?d[key]:(I18N.en[key]||key);
+  return typeof v==='function'?v(...args):v;
+}
+
+// ─── App state ────────────────────────────────────────────────────────────────
 const TYPE_COLORS={normal:'#A8A77A',fire:'#EE8130',water:'#6390F0',electric:'#F7D02C',grass:'#7AC74C',ice:'#96D9D6',fighting:'#C22E28',poison:'#A33EA1',ground:'#E2BF65',flying:'#A98FF3',psychic:'#F95587',bug:'#A6B91A',rock:'#B6A136',ghost:'#735797',dragon:'#6F35FC',dark:'#705746',steel:'#B7B7CE',fairy:'#D685AD',stellar:'#40B5A5',unknown:'#68A090'};
 
-const HINTS=[
-  // 🔴 Tier S (game-breaking)
-  {id:'dex_number',label:'Pokédex number',cost:10,icon:'🔢'},
-  {id:'type',label:'Type(s)',cost:12,icon:'🔥'},
-  // 🟠 Tier A (muy fuertes)
-  {id:'evolution_stage',label:'Evolution stage',cost:8,icon:'🌱'},
-  {id:'weaknesses',label:'Type weaknesses',cost:9,icon:'⚠️'},
-  {id:'resistances',label:'Type resistances',cost:9,icon:'🛡️'},
-  {id:'scrambled',label:'Scrambled name',cost:8,icon:'🔀'},
-  // 🟡 Tier B (útiles)
-  {id:'generation',label:'Generation',cost:7,icon:'📅'},
-  {id:'color',label:'Pokédex color',cost:6,icon:'🎨'},
-  {id:'shape',label:'Body shape',cost:6,icon:'🔷'},
-  {id:'evo_method_to',label:'Evolution method (into this)',cost:7,icon:'🔄'},
-  {id:'evo_method_from',label:'Evolution method (from this)',cost:7,icon:'➡️'},
-  {id:'stats',label:'Full stat spread',cost:6,icon:'📈'},
-  {id:'abilities',label:'Abilities',cost:6,icon:'✨'},
-  {id:'region',label:'Region',cost:7,icon:'🗺️'},
-  {id:'habitat',label:'Habitat',cost:5,icon:'🌿'},
-  {id:'first_letter',label:'First letter',cost:5,icon:'🔤'},
-  {id:'evo_count',label:'Evolution count',cost:5,icon:'⛓️'},
-  // 🔵 Tier C (relleno / bajo impacto)
-  {id:'bst',label:'Base stat total',cost:4,icon:'📊'},
-  {id:'legendary',label:'Legendary status',cost:3,icon:'🏆'},
-  {id:'egg_group',label:'Egg group(s)',cost:5,icon:'🥚'},
-  {id:'height_weight',label:'Height & weight',cost:4,icon:'📏'},
-  {id:'catch_rate',label:'Catch rate',cost:3,icon:'🎯'},
-  {id:'base_friendship',label:'Base friendship',cost:3,icon:'💛'},
-  {id:'growth_rate',label:'Growth rate',cost:3,icon:'📉'},
-  {id:'gender_ratio',label:'Gender ratio',cost:4,icon:'⚥'},
-  {id:'base_exp',label:'Base experience',cost:4,icon:'⭐'},
-  {id:'ev_yield',label:'EV yield',cost:5,icon:'💪'},
-  // 🎁 Especiales
-  {id:'genus',label:'Species',cost:9,icon:'🏷️'},
-  {id:'cry',label:'Cry (audio)',cost:12,icon:'🔊'},
-  {id:'flavor',label:'Pokédex entry',cost:14,icon:'📖'},
-  {id:'silhouette',label:'Silhouette',cost:20,icon:'👤'},
+const HINT_IDS=[
+  {id:'dex_number',cost:10,icon:'🔢'},{id:'type',cost:12,icon:'🔥'},
+  {id:'evolution_stage',cost:8,icon:'🌱'},{id:'weaknesses',cost:9,icon:'⚠️'},
+  {id:'resistances',cost:9,icon:'🛡️'},{id:'scrambled',cost:8,icon:'🔀'},
+  {id:'generation',cost:7,icon:'📅'},{id:'color',cost:6,icon:'🎨'},
+  {id:'shape',cost:6,icon:'🔷'},{id:'evo_method_to',cost:7,icon:'🔄'},
+  {id:'evo_method_from',cost:7,icon:'➡️'},{id:'stats',cost:6,icon:'📈'},
+  {id:'abilities',cost:6,icon:'✨'},{id:'region',cost:7,icon:'🗺️'},
+  {id:'habitat',cost:5,icon:'🌿'},{id:'first_letter',cost:5,icon:'🔤'},
+  {id:'evo_count',cost:5,icon:'⛓️'},{id:'bst',cost:4,icon:'📊'},
+  {id:'legendary',cost:3,icon:'🏆'},{id:'egg_group',cost:5,icon:'🥚'},
+  {id:'height_weight',cost:4,icon:'📏'},{id:'catch_rate',cost:3,icon:'🎯'},
+  {id:'base_friendship',cost:3,icon:'💛'},{id:'growth_rate',cost:3,icon:'📉'},
+  {id:'gender_ratio',cost:4,icon:'⚥'},{id:'base_exp',cost:4,icon:'⭐'},
+  {id:'ev_yield',cost:5,icon:'💪'},{id:'genus',cost:9,icon:'🏷️'},
+  {id:'cry',cost:12,icon:'🔊'},{id:'flavor',cost:14,icon:'📖'},
+  {id:'silhouette',cost:20,icon:'👤'},
 ];
 
-let startTime = 0;
-
-function cpClass(c){
-  if(c<=6)return'cost-low';
-  if(c<=11)return'cost-mid';
-  return'cost-high';
-}
-function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
-function capWords(s){return s?s.split(/[-_ ]/).map(cap).join(' '):'';}
-
+let currentLang='en';
 let pkData=null,pkSpecies=null,pkEvoChain=null,typeData={};
 let usedPts=0,hintsTaken=0,wrongGuesses=0,revealed=new Set();
 let allPokemon=[],totalCount=0;
-let flavorHint = null;
+let flavorCache={};   // lang -> {text, version}
+let scrambledCache=null;
+let startTime=0,gameOver=false,lastResultWon=false,lastScoreData=null;
 
-async function fetchJSON(url){
-  const r=await fetch(url);
-  if(!r.ok)throw new Error('HTTP '+r.status);
-  return r.json();
+function cpClass(c){return c<=6?'cost-low':c<=11?'cost-mid':'cost-high';}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
+function capWords(s){return s?s.split(/[-_ ]/).map(cap).join(' '):'';}
+
+// ─── Language ─────────────────────────────────────────────────────────────────
+function toggleLangDropdown(){document.getElementById('lang-dropdown').classList.toggle('open');}
+document.addEventListener('click',e=>{
+  const w=document.querySelector('.lang-select-wrap');
+  if(w&&!w.contains(e.target))document.getElementById('lang-dropdown').classList.remove('open');
+});
+
+function selectLang(el){
+  const lang=el.dataset.lang;
+  if(lang===currentLang){document.getElementById('lang-dropdown').classList.remove('open');return;}
+  currentLang=lang;
+  document.getElementById('lang-btn-flag').textContent=el.dataset.flag;
+  document.getElementById('lang-btn-label').textContent=el.dataset.label;
+  document.querySelectorAll('.lang-option').forEach(o=>o.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('lang-dropdown').classList.remove('open');
+  applyI18n();
+  if(pkData){rerenderRevealedHints();}
+  if(gameOver){rerenderResult();}
 }
 
+function applyI18n(){
+  // Header
+  //const logo=document.getElementById('header-logo');
+  //logo.innerHTML=`${t('header_line1')}<br><span>${t('header_line2')}</span>`;
+  // Static labels
+  document.getElementById('lbl-pts').textContent=t('pts_label');
+  document.getElementById('lbl-hints').textContent=t('hints_label');
+  document.getElementById('lbl-wrong').textContent=t('wrong_label');
+  document.getElementById('lbl-hints-section').textContent=t('hints_section');
+  document.getElementById('lbl-guess-section').textContent=t('guess_section');
+  document.getElementById('guess-input').placeholder=t('input_ph');
+  document.getElementById('btn-submit').textContent=t('submit_btn');
+  document.getElementById('btn-giveup').textContent=t('giveup_btn');
+  document.getElementById('btn-new').textContent=t('new_btn');
+  // Re-render hint buttons
+  if(pkData)renderButtons();
+}
+
+function rerenderRevealedHints(){
+  document.querySelectorAll('.revealed-row').forEach(row=>{
+    const id=row.dataset.hintId; if(!id)return;
+    const h=HINT_IDS.find(x=>x.id===id); if(!h)return;
+    const lbl=row.querySelector('.revealed-label');
+    const val=row.querySelector('.revealed-value');
+    if(lbl)lbl.innerHTML=`${h.icon} ${t('h_'+id)}`;
+    // Re-render value only for language-dependent hints
+    if(val&&['first_letter','scrambled','flavor','legendary','gender_ratio','evolution_stage',
+              'evo_method_to','evo_method_from','evo_count','weaknesses','resistances',
+              'habitat','genus'].includes(id)){
+      if(id==='flavor'){
+        // async: show cached if available
+        const cached=flavorCache[currentLang];
+        if(cached)val.innerHTML=`<span style="font-size:12px;color:var(--text);font-style:italic;line-height:1.6;">(${cached.version}) "${cached.text}"</span>`;
+        else{
+          val.innerHTML=`<span style="color:var(--text3);font-size:12px;">Loading...</span>`;
+          getFlavorHint(currentLang).then(fh=>{
+            val.innerHTML=`<span style="font-size:12px;color:var(--text);font-style:italic;line-height:1.6;">(${fh.version}) "${fh.text}"</span>`;
+          });
+        }
+      } else {
+        val.innerHTML=getHintHTML(id);
+      }
+    }
+  });
+}
+
+function rerenderResult(){
+  if(!pkData||!pkSpecies)return;
+  const loc=getLocalizedName(currentLang);
+  const en=pkSpecies.names?.find(n=>n.language.name==='en')?.name||cap(pkData.name);
+  let nameStr=loc;
+  if(currentLang!=='en'&&loc!==en)nameStr+=` (${en})`;
+  if(!lastResultWon)nameStr+=' '+t('giveup_result');
+  document.getElementById('result-name').textContent=nameStr;
+  document.getElementById('btn-new').textContent=t('new_btn');
+  if(lastResultWon&&lastScoreData){
+    const{finalScore,ht,wg,timeTaken}=lastScoreData;
+    document.getElementById('result-score').textContent=t('score_line',Math.round(finalScore),ht,wg,Math.round(timeTaken),getRating(finalScore));
+  } else if(!lastResultWon){
+    document.getElementById('result-score').textContent=t('better_luck');
+  }
+}
+
+function getRating(s){
+  return s>=900?t('rank_master'):s>=750?t('rank_elite'):s>=600?t('rank_gym'):s>=450?t('rank_trainer'):t('rank_beginner');
+}
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+async function fetchJSON(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 async function loadAllPokemon(){
   const res=await fetchJSON('https://pokeapi.co/api/v2/pokemon-species?limit=10000');
-  totalCount=res.count;
-  allPokemon=res.results;
+  totalCount=res.count;allPokemon=res.results;
   document.getElementById('load-sub').textContent=`${totalCount} Pokémon loaded`;
 }
-
 async function loadTypeChart(){
   const res=await fetchJSON('https://pokeapi.co/api/v2/type?limit=100');
-  const types=res.results.map(t=>t.name).filter(t=>t!=='unknown'&&t!=='shadow');
-  await Promise.all(types.map(async t=>{
-    const td=await fetchJSON(`https://pokeapi.co/api/v2/type/${t}`);
-    typeData[t]=td.damage_relations;
-  }));
+  const types=res.results.map(x=>x.name).filter(x=>x!=='unknown'&&x!=='shadow');
+  await Promise.all(types.map(async tn=>{const td=await fetchJSON(`https://pokeapi.co/api/v2/type/${tn}`);typeData[tn]=td.damage_relations;}));
 }
-
 function calcDefenses(typeNames){
-  const mult={};
-  Object.keys(TYPE_COLORS).forEach(t=>mult[t]=1);
-  typeNames.forEach(defType=>{
-    const rel=typeData[defType];
-    if(!rel)return;
-    rel.double_damage_from?.forEach(t=>mult[t.name]=(mult[t.name]||1)*2);
-    rel.half_damage_from?.forEach(t=>mult[t.name]=(mult[t.name]||1)*0.5);
-    rel.no_damage_from?.forEach(t=>mult[t.name]=(mult[t.name]||1)*0);
+  const m={};Object.keys(TYPE_COLORS).forEach(x=>m[x]=1);
+  typeNames.forEach(dt=>{
+    const r=typeData[dt];if(!r)return;
+    r.double_damage_from?.forEach(x=>m[x.name]=(m[x.name]||1)*2);
+    r.half_damage_from?.forEach(x=>m[x.name]=(m[x.name]||1)*0.5);
+    r.no_damage_from?.forEach(x=>m[x.name]=(m[x.name]||1)*0);
   });
-  return mult;
+  return m;
+}
+function getLocalizedName(lang){
+  const e=pkSpecies.names?.find(n=>n.language.name===lang);
+  if(e)return e.name;
+  const en=pkSpecies.names?.find(n=>n.language.name==='en');
+  return en?.name||cap(pkData.name);
+}
+async function getFlavorHint(lang){
+  if(flavorCache[lang])return flavorCache[lang];
+  const pool=pkSpecies.flavor_text_entries.filter(f=>f.language.name===lang);
+  const src=pool.length?pool:pkSpecies.flavor_text_entries.filter(f=>f.language.name==='en');
+  if(!src.length){flavorCache[lang]={text:t('not_found'),version:''};return flavorCache[lang];}
+  const entry=src[Math.floor(Math.random()*src.length)];
+  let text=entry.flavor_text.replace(/\f|\n|\r/g,' ');
+  [pkSpecies.name,getLocalizedName('en'),getLocalizedName(lang)].filter(Boolean).forEach(n=>{
+    text=text.replace(new RegExp(n,'gi'),'___');
+  });
+  try{
+    const vd=await fetchJSON(entry.version.url);
+    const vn=vd.names.find(n=>n.language.name===lang)?.name||vd.names.find(n=>n.language.name==='en')?.name||capWords(vd.name);
+    flavorCache[lang]={text,version:vn};
+  }catch{flavorCache[lang]={text,version:''};}
+  return flavorCache[lang];
 }
 
-async function prepareFlavorHint() {
-  const entries = pkSpecies.flavor_text_entries.filter(f => f.language.name === 'en');
-  if (!entries.length) {
-    flavorHint = {
-      text: 'No entry found.',
-      version: ''
-    };
-    return;
-  }
-  const randomEntry = entries[Math.floor(Math.random() * entries.length)];
-  const text = randomEntry.flavor_text.replace(/\f|\n|\r/g, ' ').replace(new RegExp(pkSpecies.name, 'gi'), '___');
-  const vData = await fetchJSON(randomEntry.version.url);
-  const versionName =vData.names.find(n => n.language.name === 'en')?.name||capWords(vData.name);
-  flavorHint = {
-    text,
-    version: versionName
-  };
-}
-
+// ─── Game ─────────────────────────────────────────────────────────────────────
 async function newGame(){
   document.getElementById('game').style.display='none';
   document.getElementById('loading').style.display='flex';
@@ -541,27 +641,24 @@ async function newGame(){
   document.getElementById('guess-input').value='';
   document.getElementById('guess-feedback').textContent='';
   document.getElementById('ac-list').style.display='none';
-  revealed=new Set();usedPts=0;hintsTaken=0;wrongGuesses=0;
+  revealed=new Set();usedPts=0;hintsTaken=0;wrongGuesses=0;gameOver=false;lastScoreData=null;
+  flavorCache={};scrambledCache=null;
   updateScores();
-
   try{
-    if(!allPokemon.length){
-      document.getElementById('load-msg').textContent='Fetching full Pokédex...';
-      await Promise.all([loadAllPokemon(),loadTypeChart()]);
-    }
-    document.getElementById('load-msg').textContent='Loading a random Pokémon...';
-    const pick=allPokemon[Math.floor(Math.random()*allPokemon.length)+1];
+    document.getElementById('load-msg').textContent=t('load_dex');
+    if(!allPokemon.length)await Promise.all([loadAllPokemon(),loadTypeChart()]);
+    document.getElementById('load-msg').textContent=t('load_random');
+    const pick=allPokemon[Math.floor(Math.random()*allPokemon.length)];
     pkSpecies=await fetchJSON(`https://pokeapi.co/api/v2/pokemon-species/${pick.name}`);
-    const pkId=pkSpecies.id;
-    pkData=await fetchJSON(`https://pokeapi.co/api/v2/pokemon/${pkId}`);
+    pkData=await fetchJSON(`https://pokeapi.co/api/v2/pokemon/${pkSpecies.id}`);
     pkEvoChain=await fetchJSON(pkSpecies.evolution_chain.url);
-	await prepareFlavorHint();
+    applyI18n();
     renderButtons();
     document.getElementById('loading').style.display='none';
     document.getElementById('game').style.display='block';
-	startTime = Date.now();
+    startTime=Date.now();
   }catch(e){
-    document.getElementById('load-msg').textContent='Error — retrying...';
+    document.getElementById('load-msg').textContent=t('load_error');
     setTimeout(newGame,2000);
   }
 }
@@ -575,294 +672,226 @@ function updateScores(){
 function renderButtons(){
   const grid=document.getElementById('btn-grid');
   grid.innerHTML='';
-  HINTS.forEach(h=>{
+  HINT_IDS.forEach(h=>{
     const btn=document.createElement('button');
-    btn.className='hint-btn';
-    btn.id='btn-'+h.id;
+    btn.className='hint-btn';btn.id='btn-'+h.id;
     btn.disabled=revealed.has(h.id);
-    btn.innerHTML=`<span style="font-size:11px;">${h.icon} ${h.label}</span><span class="cost-pill ${cpClass(h.cost)}">-${h.cost}pts</span>`;
+    btn.innerHTML=`<span style="font-size:11px;">${h.icon} ${t('h_'+h.id)}</span><span class="cost-pill ${cpClass(h.cost)}">-${h.cost}pts</span>`;
     btn.onclick=()=>revealHint(h);
     grid.appendChild(btn);
   });
 }
 
-function revealHint(h){
+async function revealHint(h){
   if(revealed.has(h.id))return;
-  revealed.add(h.id);
-  usedPts+=h.cost;hintsTaken++;
+  revealed.add(h.id);usedPts+=h.cost;hintsTaken++;
   updateScores();
   document.getElementById('btn-'+h.id).disabled=true;
-  const val=getHintHTML(h.id);
+  const val=h.id==='flavor'
+    ?await(async()=>{const fh=await getFlavorHint(currentLang);return`<span style="font-size:12px;color:var(--text);font-style:italic;line-height:1.6;">(${fh.version}) "${fh.text}"</span>`;})()
+    :getHintHTML(h.id);
   const list=document.getElementById('revealed-list');
   const div=document.createElement('div');
-  div.className='revealed-row';
-  div.innerHTML=`<span class="revealed-label">${h.icon} ${h.label}</span><div style="text-align:right;flex:1;">${val}</div>`;
+  div.className='revealed-row';div.dataset.hintId=h.id;
+  div.innerHTML=`<span class="revealed-label">${h.icon} ${t('h_'+h.id)}</span><div class="revealed-value" style="text-align:right;flex:1;">${val}</div>`;
   list.prepend(div);
 }
 
-function typePill(name){
-  const c=TYPE_COLORS[name]||'#888';
-  return`<span class="type-pill" style="background:${c}25;color:${c};border:1px solid ${c}55;">${cap(name)}</span>`;
-}
-
+function typePill(name){const c=TYPE_COLORS[name]||'#888';return`<span class="type-pill" style="background:${c}25;color:${c};border:1px solid ${c}55;">${cap(name)}</span>`;}
 function getEvoStage(){
-  const stages=[];
-  function walk(node,depth,parent){
-    stages.push({name:node.species.name,depth,detailsTo:node.evolution_details,children:node.evolves_to,parent});
-    node.evolves_to.forEach(n=>walk(n,depth+1,node));
-  }
-  walk(pkEvoChain.chain,0,null);
-  const myName=pkSpecies.name;
-  const me=stages.find(s=>s.name===myName);
-  const maxDepth=Math.max(...stages.map(s=>s.depth));
-  return{stage:me?(me.depth+1):1,total:maxDepth+1,detailsTo:me?me.detailsTo:[],childrenNodes:me?me.children:[]};
+  const s=[];
+  function w(node,d){s.push({name:node.species.name,depth:d,detailsTo:node.evolution_details,children:node.evolves_to});node.evolves_to.forEach(n=>w(n,d+1));}
+  w(pkEvoChain.chain,0);
+  const me=s.find(x=>x.name===pkSpecies.name);
+  return{stage:me?(me.depth+1):1,total:Math.max(...s.map(x=>x.depth))+1,detailsTo:me?me.detailsTo:[],childrenNodes:me?me.children:[]};
+}
+function buildEvoParts(d){
+  const p=[];
+  if(d.trigger?.name==='level-up'){if(d.min_level)p.push(`${t('lv')} ${d.min_level}`);else p.push(t('level_up'));}
+  else if(d.trigger?.name==='use-item'&&d.item)p.push(`${t('use_item')} ${capWords(d.item.name)}`);
+  else if(d.trigger?.name==='trade')p.push(t('trade')+(d.held_item?` ${t('trade_holding')} ${capWords(d.held_item.name)}`:''));
+  else if(d.trigger)p.push(capWords(d.trigger.name));
+  if(d.min_happiness)p.push(`${t('high_friend')} (≥${d.min_happiness})`);
+  if(d.time_of_day)p.push(`${t('during')} ${d.time_of_day}`);
+  if(d.known_move)p.push(`${t('knowing')} ${capWords(d.known_move.name)}`);
+  if(d.location)p.push(`${t('at_loc')} ${capWords(d.location.name)}`);
+  if(d.held_item&&d.trigger?.name!=='trade')p.push(`${t('holding')} ${capWords(d.held_item.name)}`);
+  if(d.min_beauty)p.push(t('high_beauty'));
+  if(d.needs_overworld_rain)p.push(t('in_rain'));
+  if(d.turn_upside_down)p.push(t('upside_down'));
+  if(d.gender===1)p.push(t('female'));if(d.gender===2)p.push(t('male'));
+  return p;
 }
 
 function getHintHTML(id){
   const pk=pkData,sp=pkSpecies;
   switch(id){
-    case 'dex_number':
-      return`<span style="font-size:14px;font-weight:600;color:var(--text);">#${pk.id}</span>`;
-    case 'generation':{
-      const genNum=sp.generation.name.replace('generation-','').toUpperCase();
-      return`<span style="font-size:13px;font-weight:600;color:var(--text);">Gen ${genNum}</span>`;
-    }
+    case 'dex_number':return`<span style="font-size:14px;font-weight:600;">#${pk.id}</span>`;
+    case 'generation':return`<span style="font-size:13px;font-weight:600;">Gen ${sp.generation.name.replace('generation-','').toUpperCase()}</span>`;
     case 'legendary':{
-      const status=sp.is_legendary?'Legendary':sp.is_mythical?'Mythical':'Regular Pokémon';
-      const col=sp.is_legendary||sp.is_mythical?'var(--yellow)':'var(--text2)';
-      return`<span style="font-size:13px;color:${col};font-weight:600;">${status}</span>`;
+      const s=sp.is_legendary?t('legendary'):sp.is_mythical?t('mythical'):t('regular');
+      const c=sp.is_legendary||sp.is_mythical?'var(--yellow)':'var(--text2)';
+      return`<span style="font-size:13px;color:${c};font-weight:600;">${s}</span>`;
     }
-    case 'color':
-      return`<span style="font-size:13px;color:var(--text);">${capWords(sp.color.name)}</span>`;
-    case 'shape':
-      return`<span style="font-size:13px;color:var(--text);">${sp.shape?capWords(sp.shape.name):'Unknown'}</span>`;
+    case 'color':return`<span style="font-size:13px;">${capWords(sp.color.name)}</span>`;
+    case 'shape':return`<span style="font-size:13px;">${sp.shape?capWords(sp.shape.name):t('unknown')}</span>`;
     case 'evolution_stage':{
       const{stage,total}=getEvoStage();
-      const labels=['','Basic','Stage 1','Stage 2','Stage 3'];
-      return`<span style="font-size:13px;color:var(--text);">${labels[stage]||'Stage '+stage} (${stage}/${total}${total===1?' — standalone':''})</span>`;
+      const labels=t('stage_labels');
+      return`<span style="font-size:13px;">${labels[stage]||'Stage '+stage} (${stage}/${total}${total===1?' '+t('standalone'):''})</span>`;
     }
     case 'evo_method_to':{
       const{detailsTo}=getEvoStage();
-      if(!detailsTo||!detailsTo.length)return`<span style="font-size:13px;color:var(--text2);">Base form — does not evolve from anything</span>`;
-      const d=detailsTo[0];const parts=[];
-      if(d.trigger?.name==='level-up'){if(d.min_level)parts.push(`Level ${d.min_level}`);else parts.push('Level up');}
-      else if(d.trigger?.name==='use-item'&&d.item)parts.push(`Use ${capWords(d.item.name)}`);
-      else if(d.trigger?.name==='trade')parts.push('Trade'+(d.held_item?` holding ${capWords(d.held_item.name)}`:''));
-      else if(d.trigger)parts.push(capWords(d.trigger.name));
-      if(d.min_happiness)parts.push(`High friendship (≥${d.min_happiness})`);
-      if(d.time_of_day)parts.push(`During ${d.time_of_day}`);
-      if(d.known_move)parts.push(`Knowing ${capWords(d.known_move.name)}`);
-      if(d.location)parts.push(`At ${capWords(d.location.name)}`);
-      if(d.held_item&&d.trigger?.name!=='trade')parts.push(`Holding ${capWords(d.held_item.name)}`);
-      if(d.min_beauty)parts.push('High beauty');
-      if(d.needs_overworld_rain)parts.push('In rain');
-      if(d.turn_upside_down)parts.push('Turn console upside down');
-      if(d.gender===1)parts.push('Female');if(d.gender===2)parts.push('Male');
-      return`<span style="font-size:13px;color:var(--text);">${parts.join(' + ')||'Special condition'}</span>`;
+      if(!detailsTo?.length)return`<span style="font-size:13px;color:var(--text2);">${t('base_form')}</span>`;
+      const p=buildEvoParts(detailsTo[0]);
+      return`<span style="font-size:13px;">${p.join(' + ')||t('evo_special')}</span>`;
     }
     case 'evo_method_from':{
       const{childrenNodes}=getEvoStage();
-      if(!childrenNodes||!childrenNodes.length)return`<span style="font-size:13px;color:var(--text2);">Final form — does not evolve further</span>`;
-      return childrenNodes.map(child=>{
-        const details=child.evolution_details||[];
-        if(!details.length)return`<span style="font-size:13px;color:var(--text2);">Special condition</span>`;
-        const d=details[0];const parts=[];
-        if(d.trigger?.name==='level-up'){if(d.min_level)parts.push(`Level ${d.min_level}`);else parts.push('Level up');}
-        else if(d.trigger?.name==='use-item'&&d.item)parts.push(`Use ${capWords(d.item.name)}`);
-        else if(d.trigger?.name==='trade')parts.push('Trade'+(d.held_item?` holding ${capWords(d.held_item.name)}`:''));
-        else if(d.trigger)parts.push(capWords(d.trigger.name));
-        if(d.min_happiness)parts.push(`High friendship (≥${d.min_happiness})`);
-        if(d.time_of_day)parts.push(`During ${d.time_of_day}`);
-        if(d.known_move)parts.push(`Knowing ${capWords(d.known_move.name)}`);
-        if(d.location)parts.push(`At ${capWords(d.location.name)}`);
-        if(d.held_item&&d.trigger?.name!=='trade')parts.push(`Holding ${capWords(d.held_item.name)}`);
-        if(d.min_beauty)parts.push('High beauty');
-        if(d.needs_overworld_rain)parts.push('In rain');
-        if(d.turn_upside_down)parts.push('Turn console upside down');
-        if(d.gender===1)parts.push('Female');if(d.gender===2)parts.push('Male');
-        return`<span style="font-size:13px;color:var(--text);">${parts.join(' + ')||'Special condition'}</span>`;
+      if(!childrenNodes?.length)return`<span style="font-size:13px;color:var(--text2);">${t('final_form')}</span>`;
+      return childrenNodes.map(ch=>{
+        const details=ch.evolution_details||[];
+        if(!details.length)return`<span style="font-size:13px;color:var(--text2);">${t('evo_special')}</span>`;
+        const p=buildEvoParts(details[0]);
+        return`<span style="font-size:13px;">${p.join(' + ')||t('evo_special')}</span>`;
       }).join('<br>');
     }
-    case 'bst':{
-      const bst=pk.stats.reduce((s,x)=>s+x.base_stat,0);
-      return`<span style="font-size:15px;font-weight:700;color:var(--text);">${bst}</span>`;
-    }
-    case 'type':
-      return pk.types.map(t=>typePill(t.type.name)).join('');
+    case 'bst':{const b=pk.stats.reduce((s,x)=>s+x.base_stat,0);return`<span style="font-size:15px;font-weight:700;">${b}</span>`;}
+    case 'type':return pk.types.map(x=>typePill(x.type.name)).join('');
     case 'weaknesses':{
-      const types=pk.types.map(t=>t.type.name);
-      const mult=calcDefenses(types);
-      const x4=Object.entries(mult).filter(([,v])=>v===4).map(([t])=>t);
-      const x2=Object.entries(mult).filter(([,v])=>v===2).map(([t])=>t);
-      let out='';
-      if(x4.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×4 </span>`+x4.map(typePill).join('')+'</div>';
-      if(x2.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×2 </span>`+x2.map(typePill).join('')+'</div>';
-      return out||'<span style="font-size:13px;color:var(--text2);">No weaknesses</span>';
+      const m=calcDefenses(pk.types.map(x=>x.type.name));
+      const x4=Object.entries(m).filter(([,v])=>v===4).map(([k])=>k);
+      const x2=Object.entries(m).filter(([,v])=>v===2).map(([k])=>k);
+      let o='';
+      if(x4.length)o+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×4 </span>`+x4.map(typePill).join('')+'</div>';
+      if(x2.length)o+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×2 </span>`+x2.map(typePill).join('')+'</div>';
+      return o||`<span style="font-size:13px;color:var(--text2);">${t('no_weakness')}</span>`;
     }
     case 'resistances':{
-      const types=pk.types.map(t=>t.type.name);
-      const mult=calcDefenses(types);
-      const quarter=Object.entries(mult).filter(([,v])=>v===0.25).map(([t])=>t);
-      const half=Object.entries(mult).filter(([,v])=>v===0.5).map(([t])=>t);
-      const immune=Object.entries(mult).filter(([,v])=>v===0).map(([t])=>t);
-      let out='';
-      if(immune.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×0 </span>`+immune.map(typePill).join('')+'</div>';
-      if(quarter.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">¼ </span>`+quarter.map(typePill).join('')+'</div>';
-      if(half.length)out+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">½ </span>`+half.map(typePill).join('')+'</div>';
-      return out||'<span style="font-size:13px;color:var(--text2);">No resistances or immunities</span>';
+      const m=calcDefenses(pk.types.map(x=>x.type.name));
+      const q=Object.entries(m).filter(([,v])=>v===0.25).map(([k])=>k);
+      const h=Object.entries(m).filter(([,v])=>v===0.5).map(([k])=>k);
+      const i=Object.entries(m).filter(([,v])=>v===0).map(([k])=>k);
+      let o='';
+      if(i.length)o+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">×0 </span>`+i.map(typePill).join('')+'</div>';
+      if(q.length)o+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">¼ </span>`+q.map(typePill).join('')+'</div>';
+      if(h.length)o+=`<div style="margin-bottom:3px;"><span style="font-size:10px;color:var(--text3);">½ </span>`+h.map(typePill).join('')+'</div>';
+      return o||`<span style="font-size:13px;color:var(--text2);">${t('no_resist')}</span>`;
     }
     case 'stats':{
       const names={hp:'HP',attack:'Atk',defense:'Def','special-attack':'SpA','special-defense':'SpD',speed:'Spe'};
       return pk.stats.map(s=>{
         const pct=Math.round(s.base_stat/255*100);
-        const col=s.base_stat>=100?'#7ec850':s.base_stat>=60?'#e8a040':'#e85050';
-        return`<div class="stat-row"><span style="font-size:10px;color:var(--text3);min-width:26px;">${names[s.stat.name]||s.stat.name}</span><div class="stat-bar-bg"><div class="stat-fill" style="width:${pct}%;background:${col};"></div></div><span style="font-size:11px;min-width:24px;text-align:right;color:var(--text);">${s.base_stat}</span></div>`;
+        const c=s.base_stat>=100?'#7ec850':s.base_stat>=60?'#e8a040':'#e85050';
+        return`<div class="stat-row"><span style="font-size:10px;color:var(--text3);min-width:26px;">${names[s.stat.name]||s.stat.name}</span><div class="stat-bar-bg"><div class="stat-fill" style="width:${pct}%;background:${c};"></div></div><span style="font-size:11px;min-width:24px;text-align:right;">${s.base_stat}</span></div>`;
       }).join('');
     }
-    case 'abilities':
-      return pk.abilities.map(a=>`<span style="font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:3px 9px;display:inline-block;margin:2px;color:var(--text);">${capWords(a.ability.name)}${a.is_hidden?' <span style="font-size:9px;color:var(--text3);">(H)</span>':''}</span>`).join('');
-    case 'egg_group':
-      return sp.egg_groups.map(e=>`<span style="font-size:13px;color:var(--text);">${capWords(e.name)}</span>`).join(', ');
-    case 'height_weight':
-      return`<span style="font-size:13px;color:var(--text);">${(pk.height/10).toFixed(1)} m &nbsp;/&nbsp; ${(pk.weight/10).toFixed(1)} kg</span>`;
-    case 'catch_rate':{
-      const rate=sp.capture_rate;
-      const pct=((rate/255)*100).toFixed(1);
-      return`<span style="font-size:13px;color:var(--text);">${rate}/255 (~${pct}% at full HP)</span>`;
-    }
-    case 'base_friendship':
-      return`<span style="font-size:13px;color:var(--text);">${sp.base_happiness??'—'}/255</span>`;
-    case 'growth_rate':
-      return`<span style="font-size:13px;color:var(--text);">${capWords(sp.growth_rate.name)}</span>`;
+    case 'abilities':return pk.abilities.map(a=>`<span style="font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:3px 9px;display:inline-block;margin:2px;">${capWords(a.ability.name)}${a.is_hidden?` <span style="font-size:9px;color:var(--text3);">(H)</span>`:''}</span>`).join('');
+    case 'egg_group':return sp.egg_groups.map(e=>`<span style="font-size:13px;">${capWords(e.name)}</span>`).join(', ');
+    case 'height_weight':return`<span style="font-size:13px;">${(pk.height/10).toFixed(1)} m / ${(pk.weight/10).toFixed(1)} kg</span>`;
+    case 'catch_rate':{const r=sp.capture_rate;return`<span style="font-size:13px;">${r}/255 (~${((r/255)*100).toFixed(1)}% at full HP)</span>`;}
+    case 'base_friendship':return`<span style="font-size:13px;">${sp.base_happiness??'—'}/255</span>`;
+    case 'growth_rate':return`<span style="font-size:13px;">${capWords(sp.growth_rate.name)}</span>`;
     case 'genus':{
-      const en=sp.genera?.find(g=>g.language.name==='en');
-      return`<span style="font-size:13px;color:var(--text);">${en?en.genus:'Unknown'}</span>`;
+      const g=sp.genera?.find(x=>x.language.name===currentLang)||sp.genera?.find(x=>x.language.name==='en');
+      return`<span style="font-size:13px;">${g?g.genus:t('unknown')}</span>`;
     }
     case 'region':{
-      const romanMap={'i':1,'ii':2,'iii':3,'iv':4,'v':5,'vi':6,'vii':7,'viii':8,'ix':9};
-      const rom=sp.generation.name.replace('generation-','');
-      const gNum=romanMap[rom]||0;
+      const rm={'i':1,'ii':2,'iii':3,'iv':4,'v':5,'vi':6,'vii':7,'viii':8,'ix':9};
       const regions={1:'Kanto',2:'Johto',3:'Hoenn',4:'Sinnoh',5:'Unova',6:'Kalos',7:'Alola',8:'Galar',9:'Paldea'};
-      return`<span style="font-size:13px;color:var(--text);">${regions[gNum]||capWords(sp.generation.name)}</span>`;
+      return`<span style="font-size:13px;">${regions[rm[sp.generation.name.replace('generation-','')]]||capWords(sp.generation.name)}</span>`;
     }
     case 'gender_ratio':{
-      if(sp.gender_rate===-1)return`<span style="font-size:13px;color:var(--text);">Genderless</span>`;
-      const femPct=Math.round(sp.gender_rate/8*100);
-      return`<span style="font-size:13px;color:var(--text);">♂ ${100-femPct}% / ♀ ${femPct}%</span>`;
+      if(sp.gender_rate===-1)return`<span style="font-size:13px;">${t('genderless')}</span>`;
+      const f=Math.round(sp.gender_rate/8*100);
+      return`<span style="font-size:13px;">♂ ${100-f}% / ♀ ${f}%</span>`;
     }
     case 'cry':{
       const cryUrl=`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pk.id}.ogg`;
-      const legacyUrl=`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/${pk.id}.ogg`;
-      const btnId='cry-btn-'+pk.id;
+      const legUrl=`https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/${pk.id}.ogg`;
+      const bid='cry-btn-'+pk.id;
       setTimeout(()=>{
-        const btn=document.getElementById(btnId);
+        const btn=document.getElementById(bid);
         if(btn)btn.onclick=()=>{
-          btn.textContent='Playing...';
+          btn.textContent=t('playing_cry');
           const a=new Audio(cryUrl);
-          a.play().catch(()=>{const b=new Audio(legacyUrl);b.play().catch(()=>{btn.textContent='No cry available';});b.onended=()=>{btn.textContent='▶ Play again';};});
-          a.onended=()=>{btn.textContent='▶ Play again';};
+          a.play().catch(()=>{const b=new Audio(legUrl);b.play().catch(()=>{btn.textContent=t('no_cry');});b.onended=()=>{btn.textContent=t('play_again');};});
+          a.onended=()=>{btn.textContent=t('play_again');};
         };
       },100);
-      return`<button class="play-cry-btn" id="${btnId}">🔊 Play cry</button>`;
+      return`<button class="play-cry-btn" id="${bid}">${t('play_cry')}</button>`;
     }
-    case 'habitat':
-      return`<span style="font-size:13px;color:var(--text);">${sp.habitat?capWords(sp.habitat.name):'<span style="color:var(--text3);">Not recorded in Pokédex</span>'}</span>`;
-    case 'base_exp':
-      return`<span style="font-size:13px;color:var(--text);">${pk.base_experience??'—'} XP</span>`;
+    case 'habitat':return`<span style="font-size:13px;">${sp.habitat?capWords(sp.habitat.name):`<span style="color:var(--text3);">${t('no_habitat')}</span>`}</span>`;
+    case 'base_exp':return`<span style="font-size:13px;">${pk.base_experience??'—'} XP</span>`;
     case 'ev_yield':{
-      const yields=pk.stats.filter(s=>s.effort>0).map(s=>`+${s.effort} ${({hp:'HP',attack:'Atk',defense:'Def','special-attack':'SpA','special-defense':'SpD',speed:'Spe'})[s.stat.name]||s.stat.name}`);
-      return`<span style="font-size:13px;color:var(--text);">${yields.join(', ')||'None'}</span>`;
+      const y=pk.stats.filter(s=>s.effort>0).map(s=>`+${s.effort} ${({hp:'HP',attack:'Atk',defense:'Def','special-attack':'SpA','special-defense':'SpD',speed:'Spe'})[s.stat.name]||s.stat.name}`);
+      return`<span style="font-size:13px;">${y.join(', ')||t('none')}</span>`;
     }
-    case 'flavor':{
-      return`<span style="font-size:12px;color:var(--text);font-style:italic;line-height:1.6;">(Pokémon ${flavorHint.version}) "${flavorHint.text}"</span>`;
+    case 'first_letter':{const n=getLocalizedName(currentLang);return`<span style="font-size:14px;font-weight:600;">${n[0].toUpperCase()}</span>`;}
+    case 'scrambled':{
+      if(!scrambledCache){const n=getLocalizedName('en');scrambledCache=n.split('').sort(()=>Math.random()-0.5).join('');}
+      return`<span style="font-size:13px;">${scrambledCache}</span>`;
     }
-	case 'silhouette': {
-	  const img = pk.sprites.other?.['official-artwork']?.front_default || pk.sprites.front_default;
-	  return `<img src="${img}" style="width:100px;image-rendering:pixelated;filter: brightness(0) invert(1);opacity:0.9;">`;
-	}
-	case 'first_letter':
-	  return `<span style="font-size:14px;font-weight:600;">${pkSpecies.name[0].toUpperCase()}</span>`;
-	case 'scrambled': {
-	  const name = pkSpecies.name;
-	  const shuffled = name.split('').sort(()=>Math.random()-0.5).join('');
-	  return `<span>${shuffled}</span>`;
-	}
-	case 'evo_count': {
-	  let count = 0;
-	  function walk(node){
-		if(node.evolves_to.length){
-		  count += node.evolves_to.length;
-		  node.evolves_to.forEach(walk);
-		}
-	  }
-	  walk(pkEvoChain.chain);
-	  return `<span>${count} evolution(s) in chain</span>`;
-	}
+    case 'evo_count':{
+      let c=0;function w(n){if(n.evolves_to.length){c+=n.evolves_to.length;n.evolves_to.forEach(w);}}
+      w(pkEvoChain.chain);return`<span style="font-size:13px;">${t('evo_chain',c)}</span>`;
+    }
+    case 'silhouette':{
+      const img=pk.sprites.other?.['official-artwork']?.front_default||pk.sprites.front_default;
+      return`<img src="${img}" style="width:100px;image-rendering:pixelated;filter:brightness(0) invert(1);opacity:0.9;">`;
+    }
     default:return'—';
   }
 }
 
+// ─── Guess ────────────────────────────────────────────────────────────────────
 function submitGuess(){
-  const val=document.getElementById('guess-input').value.trim().toLowerCase().replace(/\s+/g,'-');
-  if(!val)return;
-  const correctName=pkData.name.toLowerCase();
-  const correctDisplay=pkSpecies.names?.find(n=>n.language.name==='en')?.name||cap(pkData.name);
-  const fb=document.getElementById('guess-feedback');
-  if(val===correctName||val===correctDisplay.toLowerCase()){
-    showResult(true,correctDisplay);
-  }else{
+  const raw=document.getElementById('guess-input').value.trim();if(!raw)return;
+  const v=raw.toLowerCase();
+  const api=pkData.name.toLowerCase();
+  const en=(pkSpecies.names?.find(n=>n.language.name==='en')?.name||cap(pkData.name)).toLowerCase();
+  const loc=getLocalizedName(currentLang).toLowerCase();
+  if(v===api||v===en||v===loc||v.replace(/\s+/g,'-')===api){showResult(true);}
+  else{
     wrongGuesses++;updateScores();
-    fb.style.color='var(--danger)';
-    fb.textContent='✗ Not quite! Try again.';
+    const fb=document.getElementById('guess-feedback');
+    fb.style.color='var(--danger)';fb.textContent=t('wrong_fb');
     setTimeout(()=>{fb.textContent='';},2200);
   }
 }
-
-function giveUp(){
-  const correctDisplay=pkSpecies.names?.find(n=>n.language.name==='en')?.name||cap(pkData.name);
-  showResult(false,correctDisplay);
-}
-
-function showResult(won,correctDisplay){
-  const banner=document.getElementById('result-banner');
-  const sprite=document.getElementById('pksprite');
-  sprite.src=pkData.sprites.other?.['official-artwork']?.front_default||pkData.sprites.front_default||'';
-  document.getElementById('result-name').textContent=correctDisplay+(won?'':' (you gave up)');
-  let rating='';
+function giveUp(){showResult(false);}
+function showResult(won){
+  gameOver=true;lastResultWon=won;
+  const loc=getLocalizedName(currentLang);
+  const en=pkSpecies.names?.find(n=>n.language.name==='en')?.name||cap(pkData.name);
+  let nameStr=loc;
+  if(currentLang!=='en'&&loc!==en)nameStr+=` (${en})`;
+  if(!won)nameStr+=' '+t('giveup_result');
+  document.getElementById('pksprite').src=pkData.sprites.other?.['official-artwork']?.front_default||pkData.sprites.front_default||'';
+  document.getElementById('result-name').textContent=nameStr;
   if(!won){
-	rating='Better luck next time!';
-	document.getElementById('result-score').textContent=rating;
+    document.getElementById('result-score').textContent=t('better_luck');
+    lastScoreData=null;
+  } else {
+    const timeTaken=(Date.now()-startTime)/1000;
+    const hp=usedPts*10;
+    let wp=0;for(let i=1;i<=wrongGuesses;i++)wp+=i*25;
+    const tp=Math.min(timeTaken*2,200);
+    const eb=hintsTaken===0?200:hintsTaken<=2?120:hintsTaken<=4?60:0;
+    const rb=wrongGuesses===0?100:wrongGuesses===1?50:0;
+    const fs=Math.max(0,1000-hp-wp-tp+eb+rb);
+    lastScoreData={finalScore:fs,ht:hintsTaken,wg:wrongGuesses,timeTaken};
+    document.getElementById('result-score').textContent=t('score_line',Math.round(fs),hintsTaken,wrongGuesses,Math.round(timeTaken),getRating(fs));
   }
-  else{
-	const timeTaken = (Date.now() - startTime) / 1000;
-	let hintPenalty = usedPts * 10;
-	let wrongPenalty = 0;
-	for(let i=1;i<=wrongGuesses;i++){
-	  wrongPenalty += i * 25;
-	}
-	const timePenalty = Math.min(timeTaken * 2, 200);
-	let efficiencyBonus = 0;
-	if(hintsTaken === 0) efficiencyBonus += 200;
-	else if(hintsTaken <= 2) efficiencyBonus += 120;
-	else if(hintsTaken <= 4) efficiencyBonus += 60;
-	let riskBonus = 0;
-	if(wrongGuesses === 0) riskBonus += 100;
-	else if(wrongGuesses === 1) riskBonus += 50;
-	const finalScore = Math.max(0, 1000 - hintPenalty - wrongPenalty - timePenalty + efficiencyBonus + riskBonus);
-	if (finalScore>=900)rating='🏆 Master Trainer';
-	else if(finalScore>=750)rating='🔥 Elite Four';
-	else if(finalScore>=600)rating='⚡ Gym Leader';
-	else if(finalScore>=450)rating='👍 Trainer';
-	else rating='🌱 Beginner';
-	document.getElementById('result-score').textContent=`Score: ${Math.round(finalScore)} · ${hintsTaken} hints · ${wrongGuesses} wrong · ${Math.round(timeTaken)}s · ${rating}`;
-  }
-  banner.className='';
-  banner.id='result-banner';
+  const banner=document.getElementById('result-banner');
+  banner.className='';banner.id='result-banner';
   banner.classList.add(won?'won':'lost');
   document.getElementById('result-area').style.display='block';
   document.getElementById('guess-feedback').textContent='';
+  document.getElementById('btn-new').textContent=t('new_btn');
 }
 
+// ─── Autocomplete ─────────────────────────────────────────────────────────────
 const gInput=document.getElementById('guess-input');
 const acList=document.getElementById('ac-list');
 gInput.addEventListener('input',()=>{
@@ -872,8 +901,7 @@ gInput.addEventListener('input',()=>{
   const matches=allPokemon.filter(p=>p.name.startsWith(q)).slice(0,7);
   if(!matches.length){acList.style.display='none';return;}
   matches.forEach(m=>{
-    const d=document.createElement('div');
-    d.className='ac-item';
+    const d=document.createElement('div');d.className='ac-item';
     d.textContent=capWords(m.name);
     d.onclick=()=>{gInput.value=capWords(m.name);acList.style.display='none';};
     acList.appendChild(d);
@@ -883,6 +911,8 @@ gInput.addEventListener('input',()=>{
 gInput.addEventListener('keydown',e=>{if(e.key==='Enter')submitGuess();});
 document.addEventListener('click',e=>{if(!gInput.contains(e.target)&&!acList.contains(e.target))acList.style.display='none';});
 
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+applyI18n();
 newGame();
 </script>
 </body>
