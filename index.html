@@ -467,23 +467,44 @@ function t(key,...args){
 // ─── App state ────────────────────────────────────────────────────────────────
 const TYPE_COLORS={normal:'#A8A77A',fire:'#EE8130',water:'#6390F0',electric:'#F7D02C',grass:'#7AC74C',ice:'#96D9D6',fighting:'#C22E28',poison:'#A33EA1',ground:'#E2BF65',flying:'#A98FF3',psychic:'#F95587',bug:'#A6B91A',rock:'#B6A136',ghost:'#735797',dragon:'#6F35FC',dark:'#705746',steel:'#B7B7CE',fairy:'#D685AD',stellar:'#40B5A5',unknown:'#68A090'};
 
-const HINT_IDS=[
-  {id:'dex_number',cost:10,icon:'🔢'},{id:'type',cost:12,icon:'🔥'},
-  {id:'evolution_stage',cost:8,icon:'🌱'},{id:'weaknesses',cost:9,icon:'⚠️'},
-  {id:'resistances',cost:9,icon:'🛡️'},{id:'scrambled',cost:8,icon:'🔀'},
-  {id:'generation',cost:7,icon:'📅'},{id:'color',cost:6,icon:'🎨'},
-  {id:'shape',cost:6,icon:'🔷'},{id:'evo_method_to',cost:7,icon:'🔄'},
-  {id:'evo_method_from',cost:7,icon:'➡️'},{id:'stats',cost:6,icon:'📈'},
-  {id:'abilities',cost:6,icon:'✨'},{id:'region',cost:7,icon:'🗺️'},
-  {id:'habitat',cost:5,icon:'🌿'},{id:'first_letter',cost:5,icon:'🔤'},
-  {id:'evo_count',cost:5,icon:'⛓️'},{id:'bst',cost:4,icon:'📊'},
-  {id:'legendary',cost:3,icon:'🏆'},{id:'egg_group',cost:5,icon:'🥚'},
-  {id:'height_weight',cost:4,icon:'📏'},{id:'catch_rate',cost:3,icon:'🎯'},
-  {id:'base_friendship',cost:3,icon:'💛'},{id:'growth_rate',cost:3,icon:'📉'},
-  {id:'gender_ratio',cost:4,icon:'⚥'},{id:'base_exp',cost:4,icon:'⭐'},
-  {id:'ev_yield',cost:5,icon:'💪'},{id:'genus',cost:9,icon:'🏷️'},
-  {id:'cry',cost:12,icon:'🔊'},{id:'flavor',cost:14,icon:'📖'},
-  {id:'silhouette',cost:20,icon:'👤'},
+const HINTS=[
+  // 🔴 Tier S (game-breaking)
+  {id:'dex_number',label:'Pokédex number',cost:10,icon:'🔢'},
+  {id:'type',label:'Type(s)',cost:12,icon:'🔥'},
+  // 🟠 Tier A (muy fuertes)
+  {id:'evolution_stage',label:'Evolution stage',cost:8,icon:'🌱'},
+  {id:'weaknesses',label:'Type weaknesses',cost:9,icon:'⚠️'},
+  {id:'resistances',label:'Type resistances',cost:9,icon:'🛡️'},
+  {id:'scrambled',label:'Scrambled name',cost:8,icon:'🔀'},
+  // 🟡 Tier B (útiles)
+  {id:'generation',label:'Generation',cost:7,icon:'📅'},
+  {id:'color',label:'Pokédex color',cost:6,icon:'🎨'},
+  {id:'shape',label:'Body shape',cost:6,icon:'🔷'},
+  {id:'evo_method_to',label:'Evolution method (into this)',cost:7,icon:'🔄'},
+  {id:'evo_method_from',label:'Evolution method (from this)',cost:7,icon:'➡️'},
+  {id:'stats',label:'Full stat spread',cost:6,icon:'📈'},
+  {id:'abilities',label:'Abilities',cost:6,icon:'✨'},
+  {id:'region',label:'Region',cost:7,icon:'🗺️'},
+  {id:'habitat',label:'Habitat',cost:5,icon:'🌿'},
+  {id:'first_letter',label:'First letter',cost:5,icon:'🔤'},
+  {id:'evo_count',label:'Evolution count',cost:5,icon:'⛓️'},
+  // 🔵 Tier C (relleno / bajo impacto)
+  {id:'bst',label:'Base stat total',cost:4,icon:'📊'},
+  {id:'legendary',label:'Legendary status',cost:3,icon:'🏆'},
+  {id:'egg_group',label:'Egg group(s)',cost:5,icon:'🥚'},
+  {id:'height_weight',label:'Height & weight',cost:4,icon:'📏'},
+  {id:'catch_rate',label:'Catch rate',cost:3,icon:'🎯'},
+  {id:'base_friendship',label:'Base friendship',cost:3,icon:'💛'},
+  {id:'growth_rate',label:'Growth rate',cost:3,icon:'📉'},
+  {id:'gender_ratio',label:'Gender ratio',cost:4,icon:'⚥'},
+  {id:'base_exp',label:'Base experience',cost:4,icon:'⭐'},
+  {id:'ev_yield',label:'EV yield',cost:5,icon:'💪'},
+  // 🎁 Especiales
+  {id:'genus',label:'Species',cost:9,icon:'🏷️'},
+  {id:'japanese_name',label:'Japanese name',cost:6,icon:'🇯🇵'},
+  {id:'cry',label:'Cry (audio)',cost:12,icon:'🔊'},
+  {id:'flavor',label:'Pokédex entry',cost:14,icon:'📖'},
+  {id:'silhouette',label:'Silhouette',cost:20,icon:'👤'},
 ];
 
 let currentLang='en';
@@ -942,6 +963,33 @@ function getHintHTML(id){
       const img=pk.sprites.other?.['official-artwork']?.front_default||pk.sprites.front_default;
       return`<img src="${img}" style="width:100px;image-rendering:pixelated;filter:brightness(0) invert(1);opacity:0.9;">`;
     }
+	case 'silhouette': {
+	  const img = pk.sprites.other?.['official-artwork']?.front_default || pk.sprites.front_default;
+	  return `<img src="${img}" style="width:100px;image-rendering:pixelated;filter: brightness(0) invert(1);opacity:0.9;">`;
+	}
+	case 'japanese_name':{
+	  const jaName = pkSpecies.names?.find(n=>n.language.name==='ja')?.name||'—';
+	  const romajiName = pkSpecies.names?.find(n=>n.language.name==='ja-roma')?.name||'';
+	  return `<span style="font-size:16px;letter-spacing:.05em;color:var(--text);">${jaName}</span>${romajiName?` <span style="font-size:12px;color:var(--text3);">(${romajiName})</span>`:''}`;
+	}
+	case 'first_letter':
+	  return `<span style="font-size:14px;font-weight:600;">${pkSpecies.name[0].toUpperCase()}</span>`;
+	case 'scrambled': {
+	  const name = pkSpecies.name;
+	  const shuffled = name.split('').sort(()=>Math.random()-0.5).join('');
+	  return `<span>${shuffled}</span>`;
+	}
+	case 'evo_count': {
+	  let count = 0;
+	  function walk(node){
+		if(node.evolves_to.length){
+		  count += node.evolves_to.length;
+		  node.evolves_to.forEach(walk);
+		}
+	  }
+	  walk(pkEvoChain.chain);
+	  return `<span>${count} evolution(s) in chain</span>`;
+	}
     default:return'—';
   }
 }
