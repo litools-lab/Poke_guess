@@ -1,4 +1,4 @@
-# 🎮 Who's That Pokémon?
+# <img src="/assets/favicon.ico" width="36" height="36" align="absmiddle" alt=""> Who's That Pokémon?
 
 <div align="center">
 
