@@ -9,7 +9,7 @@
 
 **A strategic Pokémon guessing game with 31 unlockable hints, a scoring system, and all 1000+ Pokémon.**
 
-[▶ Play Now](https://your-username.github.io/whos-that-pokemon) · [Report a Bug](../../issues) · [Request a Feature](../../issues)
+[▶ Play Now](https://litools-lab.github.io/whos-that-pokemon) · [Report a Bug](../../issues) · [Request a Feature](../../issues)
 
 </div>
 
@@ -64,7 +64,7 @@ The score starts at **1000** and is reduced by penalties, then bonuses are added
 
 ## 💡 Hints
 
-31 hints across 4 tiers. Higher cost = more revealing.
+32 hints across 4 tiers. Higher cost = more revealing.
 
 ### 🔴 Tier S — Game-Breaking (10–20 pts)
 
