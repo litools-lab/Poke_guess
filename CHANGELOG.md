@@ -15,7 +15,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Rank system: Beginner → Master Trainer
 - Pokémon cry audio playback
 - Silhouette reveal hint
-- Pokédex entry (flavor text) hint with Pokémon name redacted
+- Pokédex entry (flavor text) hint with Pokémon name hidden
 - Scrambled name hint
 - Japanese name (kanji + romaji) hint
 - Type weakness and resistance charts
