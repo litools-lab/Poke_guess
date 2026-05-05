@@ -6,16 +6,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased]
-
-### Planned
-- Sound effects on correct/wrong guess
-- Streak counter across rounds
-- Hard mode (no autocomplete)
-- Share result as image
-
----
-
 ## [1.0.0] — Initial Release
 
 ### Added
